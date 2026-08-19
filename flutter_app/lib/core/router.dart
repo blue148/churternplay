@@ -7,10 +7,15 @@ import '../features/auth/auth_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/game_nite/dice_roller_page.dart';
 import '../features/game_nite/game_nite_screen.dart';
+import '../features/library/friend_library_screen.dart';
 import '../features/library/game_detail_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/library/manual_game_entry_page.dart';
+import '../features/profile/friends_screen.dart';
+import '../features/profile/profile_details_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/profile/settings_screen.dart';
+import '../features/privacy/privacy_policy_screen.dart';
 import '../features/scanner/scanner_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../providers/auth_provider.dart';
@@ -35,8 +40,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = supabase.auth.currentSession != null;
       final onAuth = state.matchedLocation == '/auth';
+      final onPublicPage =
+          onAuth || state.matchedLocation == PrivacyPolicyScreen.routePath;
 
-      if (!isAuthenticated && !onAuth) return '/auth';
+      if (!isAuthenticated && !onPublicPage) return '/auth';
       if (isAuthenticated && onAuth) return '/dashboard';
       return null;
     },
@@ -44,6 +51,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth',
         builder: (_, __) => const AuthScreen(),
+      ),
+      GoRoute(
+        path: PrivacyPolicyScreen.routePath,
+        builder: (_, __) => const PrivacyPolicyScreen(),
       ),
       GoRoute(
         path: '/game/:entryId',
@@ -108,12 +119,35 @@ final routerProvider = Provider<GoRouter>((ref) {
                     child: ManualGameEntryPage(barcode: state.extra as String?),
                   ),
                 ),
+                GoRoute(
+                  path: 'friend/:friendId',
+                  builder: (_, state) => FriendLibraryScreen(
+                    friendId: state.pathParameters['friendId']!,
+                    friendUsername: state.extra as String? ?? 'Friend',
+                  ),
+                ),
               ],
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-                path: '/profile', builder: (_, __) => const ProfileScreen()),
+              path: '/profile',
+              builder: (_, __) => const ProfileScreen(),
+              routes: [
+                GoRoute(
+                  path: 'friends',
+                  builder: (_, __) => const FriendsScreen(),
+                ),
+                GoRoute(
+                  path: 'settings',
+                  builder: (_, __) => const SettingsScreen(),
+                ),
+                GoRoute(
+                  path: 'details',
+                  builder: (_, __) => const ProfileDetailsScreen(),
+                ),
+              ],
+            ),
           ]),
         ],
       ),

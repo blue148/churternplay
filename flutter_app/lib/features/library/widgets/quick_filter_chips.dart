@@ -57,7 +57,7 @@ class QuickFilterChips extends ConsumerWidget {
             : null,
         label: Text(
           label,
-          style: GoogleFonts.jost(
+          style: GoogleFonts.atkinsonHyperlegibleNext(
             fontSize: 12,
             color: selected ? Colors.white : AppColors.ink400,
           ),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_service.dart';
+import 'widgets/beta_disclaimer_dialog.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -21,6 +22,14 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isSignUp = false;
   bool _loading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showBetaDisclaimerDialog(context);
+    });
+  }
 
   @override
   void dispose() {
@@ -92,7 +101,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 20),
                       Text(
                         'The Catalogue',
-                        style: GoogleFonts.cormorantGaramond(
+                        style: GoogleFonts.literata(
                           fontSize: 32,
                           fontWeight: FontWeight.w300,
                           color: AppColors.ink600,
@@ -104,7 +113,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 8),
                       Text(
                         (_isSignUp ? 'Registration' : 'Authentication').toUpperCase(),
-                        style: GoogleFonts.jost(
+                        style: GoogleFonts.atkinsonHyperlegibleNext(
                           fontSize: 10,
                           letterSpacing: 2.5,
                           color: AppColors.ink200,
@@ -156,7 +165,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           child: Text(
                             _error!,
-                            style: GoogleFonts.jost(
+                            style: GoogleFonts.atkinsonHyperlegibleNext(
                               fontSize: 13,
                               color: AppColors.clay600,
                             ),
@@ -182,7 +191,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 )
                               : Text(
                                   (_isSignUp ? 'Register' : 'Enter').toUpperCase(),
-                                  style: GoogleFonts.jost(
+                                  style: GoogleFonts.atkinsonHyperlegibleNext(
                                     fontSize: 12,
                                     letterSpacing: 2.5,
                                     fontWeight: FontWeight.w500,
@@ -205,7 +214,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           _isSignUp
                               ? 'Return to Sign In'
                               : 'Create New Account',
-                          style: GoogleFonts.jost(
+                          style: GoogleFonts.atkinsonHyperlegibleNext(
                             fontSize: 11,
                             letterSpacing: 1.5,
                             color: AppColors.ink300,
@@ -237,7 +246,7 @@ class _AuthScreenState extends State<AuthScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.jost(
+          style: GoogleFonts.atkinsonHyperlegibleNext(
             fontSize: 10,
             letterSpacing: 2,
             color: AppColors.ink200,
@@ -251,7 +260,7 @@ class _AuthScreenState extends State<AuthScreen> {
           obscureText: obscure,
           keyboardType: keyboardType,
           validator: validator,
-          style: GoogleFonts.jost(fontSize: 14, color: AppColors.ink500),
+          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink500),
           decoration: InputDecoration(
             fillColor: AppColors.parchment50,
             filled: true,

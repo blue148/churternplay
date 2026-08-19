@@ -39,62 +39,12 @@ function AppContent() {
 
   const isAdmin = profile?.is_admin || false;
 
-  // ── Wooden disc indicator (desktop nav only) ────────────────────────────────
-  const discColors: Record<string, { base: string; light: string; dark: string }> = {
-    dashboard:    { base: '#b85c28', light: '#d4855a', dark: '#6b3412' },
-    library:      { base: '#3a7040', light: '#5d9560', dark: '#163720' },
-    gameNiteTools:{ base: '#2e8282', light: '#52a5a5', dark: '#0d3e3e' },
-    admin:        { base: '#74389a', light: '#9a62b8', dark: '#2e0d46' },
-  };
-
-  const woodenDisc = (tab: string, pos?: React.CSSProperties) => {
-    const c = discColors[tab];
-    const discW = 22;
-    const topH = 12;
-    const sideH = 7;
-    const wrapH = Math.floor(topH / 2) + sideH;
-
-    const defaultPos: React.CSSProperties = {
-      bottom: 0,
-      left: '50%',
-      transform: 'translateX(-50%) translateY(50%)',
-    };
-
-    return (
-      <span
-        className="pointer-events-none z-10"
-        style={{ position: 'absolute', width: discW, height: wrapH, ...(pos ?? defaultPos) }}
-      >
-        <span
-          style={{
-            position: 'absolute',
-            top: Math.floor(topH / 2),
-            left: 0,
-            right: 0,
-            height: sideH,
-            background: `linear-gradient(to bottom, ${c.dark} 0%, rgba(8,3,1,0.88) 100%)`,
-            borderRadius: `0 0 ${discW / 2}px ${discW / 2}px / 0 0 ${Math.ceil(sideH * 0.45)}px ${Math.ceil(sideH * 0.45)}px`,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.55)',
-          }}
-        />
-        <span
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: topH,
-            borderRadius: '50%',
-            background: [
-              'repeating-linear-gradient(82deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 3px)',
-              `radial-gradient(ellipse at 40% 32%, ${c.light} 0%, ${c.base} 52%, ${c.dark} 100%)`,
-            ].join(', '),
-            boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.20)',
-            zIndex: 1,
-          }}
-        />
-      </span>
-    );
+  // ── Desktop nav tab accent colors ───────────────────────────────────────────
+  const navColors: Record<string, string> = {
+    dashboard: '#b85c28',
+    library: '#3a7040',
+    gameNiteTools: '#2e8282',
+    admin: '#74389a',
   };
 
   // ── Bottom nav items ────────────────────────────────────────────────────────
@@ -123,44 +73,44 @@ function AppContent() {
               <div className="flex space-x-1">
                 <button
                   onClick={() => setActiveTab('dashboard')}
-                  className={`relative flex items-center space-x-2 px-6 py-4 font-medium transition ${
-                    activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
+                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition rounded-md ${
+                    activeTab === 'dashboard' ? '' : 'text-slate-600 hover:text-slate-900'
                   }`}
+                  style={activeTab === 'dashboard' ? { color: navColors.dashboard, backgroundColor: `${navColors.dashboard}1a` } : undefined}
                 >
                   <BarChart3 className="w-5 h-5" />
                   <span>Dashboard</span>
-                  {activeTab === 'dashboard' && woodenDisc('dashboard')}
                 </button>
                 <button
                   onClick={() => setActiveTab('library')}
-                  className={`relative flex items-center space-x-2 px-6 py-4 font-medium transition ${
-                    activeTab === 'library' ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
+                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition rounded-md ${
+                    activeTab === 'library' ? '' : 'text-slate-600 hover:text-slate-900'
                   }`}
+                  style={activeTab === 'library' ? { color: navColors.library, backgroundColor: `${navColors.library}1a` } : undefined}
                 >
                   <BookOpen className="w-5 h-5" />
                   <span>My Catalogue</span>
-                  {activeTab === 'library' && woodenDisc('library', { top: 7, right: 18 })}
                 </button>
                 <button
                   onClick={() => setActiveTab('gameNiteTools')}
-                  className={`relative flex items-center space-x-2 px-6 py-4 font-medium transition ${
-                    activeTab === 'gameNiteTools' ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
+                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition rounded-md ${
+                    activeTab === 'gameNiteTools' ? '' : 'text-slate-600 hover:text-slate-900'
                   }`}
+                  style={activeTab === 'gameNiteTools' ? { color: navColors.gameNiteTools, backgroundColor: `${navColors.gameNiteTools}1a` } : undefined}
                 >
                   <Sparkles className="w-5 h-5" />
                   <span>Game Nite Tools</span>
-                  {activeTab === 'gameNiteTools' && woodenDisc('gameNiteTools', { bottom: 11, left: 50 })}
                 </button>
                 {isAdmin && (
                   <button
                     onClick={() => setActiveTab('admin')}
-                    className={`relative flex items-center space-x-2 px-6 py-4 font-medium transition ${
-                      activeTab === 'admin' ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
+                    className={`flex items-center space-x-2 px-6 py-4 font-medium transition rounded-md ${
+                      activeTab === 'admin' ? '' : 'text-slate-600 hover:text-slate-900'
                     }`}
+                    style={activeTab === 'admin' ? { color: navColors.admin, backgroundColor: `${navColors.admin}1a` } : undefined}
                   >
                     <Shield className="w-5 h-5" />
                     <span>Admin</span>
-                    {activeTab === 'admin' && woodenDisc('admin')}
                   </button>
                 )}
               </div>
@@ -235,17 +185,11 @@ function AppContent() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative flex-1 flex flex-col items-center justify-center pt-2 pb-1.5 gap-0.5 transition-colors ${
+                className={`flex-1 flex flex-col items-center justify-center pt-2 pb-1.5 gap-0.5 transition-colors ${
                   isActive ? '' : 'text-slate-400'
                 }`}
-                style={isActive ? { color: bottomNavColor } : undefined}
+                style={isActive ? { color: bottomNavColor, backgroundColor: `${bottomNavColor}1a` } : undefined}
               >
-                {isActive && (
-                  <span
-                    className="absolute top-0 inset-x-0 h-0.5"
-                    style={{ backgroundColor: bottomNavColor }}
-                  />
-                )}
                 <Icon className="w-5 h-5" />
                 <span className={`text-xs font-body ${isActive ? 'font-medium' : ''}`}>
                   {label}
@@ -257,14 +201,11 @@ function AppContent() {
           {/* Profile — full page tab on mobile */}
           <button
             onClick={() => setActiveTab('profile')}
-            className={`relative flex-1 flex flex-col items-center justify-center pt-2 pb-1.5 gap-0.5 transition-colors ${
+            className={`flex-1 flex flex-col items-center justify-center pt-2 pb-1.5 gap-0.5 transition-colors ${
               activeTab === 'profile' ? '' : 'text-slate-400'
             }`}
-            style={activeTab === 'profile' ? { color: bottomNavColor } : undefined}
+            style={activeTab === 'profile' ? { color: bottomNavColor, backgroundColor: `${bottomNavColor}1a` } : undefined}
           >
-            {activeTab === 'profile' && (
-              <span className="absolute top-0 inset-x-0 h-0.5" style={{ backgroundColor: bottomNavColor }} />
-            )}
             <MeepleIcon className="w-5 h-5" />
             <span className={`text-xs font-body ${activeTab === 'profile' ? 'font-medium' : ''}`}>Profile</span>
           </button>

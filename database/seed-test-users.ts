@@ -18,29 +18,46 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // ─── Test data ────────────────────────────────────────────────────────────────
 
 const TEST_GAMES = [
-  { name: 'Catan',           bgg_id: 13,     publisher: 'KOSMOS',            year: '1995', min_players: 3, max_players: 4, playtime_minutes: 120, barcode: 'TEST-BGG-13'    },
-  { name: 'Ticket to Ride',  bgg_id: 9209,   publisher: 'Days of Wonder',    year: '2004', min_players: 2, max_players: 5, playtime_minutes: 75,  barcode: 'TEST-BGG-9209'  },
-  { name: 'Pandemic',        bgg_id: 30549,  publisher: 'Z-Man Games',       year: '2008', min_players: 2, max_players: 4, playtime_minutes: 45,  barcode: 'TEST-BGG-30549' },
-  { name: 'Carcassonne',     bgg_id: 822,    publisher: 'Hans im Glück',     year: '2000', min_players: 2, max_players: 5, playtime_minutes: 45,  barcode: 'TEST-BGG-822'   },
-  { name: '7 Wonders',       bgg_id: 68448,  publisher: 'Repos Production',  year: '2010', min_players: 2, max_players: 7, playtime_minutes: 30,  barcode: 'TEST-BGG-68448' },
-  { name: 'Dominion',        bgg_id: 36218,  publisher: 'Rio Grande Games',  year: '2008', min_players: 2, max_players: 4, playtime_minutes: 30,  barcode: 'TEST-BGG-36218' },
-  { name: 'Agricola',        bgg_id: 31260,  publisher: 'Lookout Games',     year: '2007', min_players: 1, max_players: 5, playtime_minutes: 150, barcode: 'TEST-BGG-31260' },
-  { name: 'Splendor',        bgg_id: 148228, publisher: 'Space Cowboys',     year: '2014', min_players: 2, max_players: 4, playtime_minutes: 30,  barcode: 'TEST-BGG-148228'},
-  { name: 'Puerto Rico',     bgg_id: 3076,   publisher: 'Alea',              year: '2002', min_players: 2, max_players: 5, playtime_minutes: 90,  barcode: 'TEST-BGG-3076'  },
-  { name: 'Power Grid',      bgg_id: 2651,   publisher: 'Rio Grande Games',  year: '2004', min_players: 2, max_players: 6, playtime_minutes: 120, barcode: 'TEST-BGG-2651'  },
+  { name: 'Catan',              bgg_id: 13,     publisher: 'KOSMOS',            year: '1995', min_players: 3, max_players: 4, playtime_minutes: 120, barcode: 'TEST-BGG-13'     },
+  { name: 'Ticket to Ride',     bgg_id: 9209,   publisher: 'Days of Wonder',    year: '2004', min_players: 2, max_players: 5, playtime_minutes: 75,  barcode: 'TEST-BGG-9209'   },
+  { name: 'Pandemic',           bgg_id: 30549,  publisher: 'Z-Man Games',       year: '2008', min_players: 2, max_players: 4, playtime_minutes: 45,  barcode: 'TEST-BGG-30549'  },
+  { name: 'Carcassonne',        bgg_id: 822,    publisher: 'Hans im Glück',     year: '2000', min_players: 2, max_players: 5, playtime_minutes: 45,  barcode: 'TEST-BGG-822'    },
+  { name: '7 Wonders',          bgg_id: 68448,  publisher: 'Repos Production',  year: '2010', min_players: 2, max_players: 7, playtime_minutes: 30,  barcode: 'TEST-BGG-68448'  },
+  { name: 'Dominion',           bgg_id: 36218,  publisher: 'Rio Grande Games',  year: '2008', min_players: 2, max_players: 4, playtime_minutes: 30,  barcode: 'TEST-BGG-36218'  },
+  { name: 'Agricola',           bgg_id: 31260,  publisher: 'Lookout Games',     year: '2007', min_players: 1, max_players: 5, playtime_minutes: 150, barcode: 'TEST-BGG-31260'  },
+  { name: 'Splendor',           bgg_id: 148228, publisher: 'Space Cowboys',     year: '2014', min_players: 2, max_players: 4, playtime_minutes: 30,  barcode: 'TEST-BGG-148228' },
+  { name: 'Puerto Rico',        bgg_id: 3076,   publisher: 'Alea',              year: '2002', min_players: 2, max_players: 5, playtime_minutes: 90,  barcode: 'TEST-BGG-3076'   },
+  { name: 'Power Grid',         bgg_id: 2651,   publisher: 'Rio Grande Games',  year: '2004', min_players: 2, max_players: 6, playtime_minutes: 120, barcode: 'TEST-BGG-2651'   },
+  { name: 'Wingspan',           bgg_id: 266192, publisher: 'Stonemaier Games',  year: '2019', min_players: 1, max_players: 5, playtime_minutes: 70,  barcode: 'TEST-BGG-266192' },
+  { name: 'Azul',               bgg_id: 230802, publisher: 'Plan B Games',      year: '2017', min_players: 2, max_players: 4, playtime_minutes: 45,  barcode: 'TEST-BGG-230802' },
+  { name: 'Codenames',          bgg_id: 178900, publisher: 'Czech Games Edition', year: '2015', min_players: 2, max_players: 8, playtime_minutes: 15, barcode: 'TEST-BGG-178900' },
+  { name: 'Terraforming Mars',  bgg_id: 167791, publisher: 'FryxGames',         year: '2016', min_players: 1, max_players: 5, playtime_minutes: 120, barcode: 'TEST-BGG-167791' },
+  { name: 'Root',               bgg_id: 237182, publisher: 'Leder Games',       year: '2018', min_players: 2, max_players: 4, playtime_minutes: 90,  barcode: 'TEST-BGG-237182' },
+  { name: 'Everdell',           bgg_id: 199792, publisher: 'Starling Games',    year: '2018', min_players: 1, max_players: 4, playtime_minutes: 80,  barcode: 'TEST-BGG-199792' },
+  { name: 'Brass: Birmingham',  bgg_id: 224517, publisher: 'Roxley',            year: '2018', min_players: 2, max_players: 4, playtime_minutes: 120, barcode: 'TEST-BGG-224517' },
+  { name: 'Gloomhaven',         bgg_id: 174430, publisher: 'Cephalofair Games', year: '2017', min_players: 1, max_players: 4, playtime_minutes: 120, barcode: 'TEST-BGG-174430' },
 ];
 
 const TEST_USERS = [
-  { email: 'alice@test.liberludorum.com',   password: 'TestUser123!', username: 'alice_gamer'    },
-  { email: 'bob@test.liberludorum.com',     password: 'TestUser123!', username: 'bob_plays'      },
-  { email: 'charlie@test.liberludorum.com', password: 'TestUser123!', username: 'charlie_boards' },
+  { email: 'alice@test.liberludorum.com',   password: 'TestUser123!', username: 'alice_gamer',    fullName: 'Alice Chen'      },
+  { email: 'bob@test.liberludorum.com',     password: 'TestUser123!', username: 'bob_plays',      fullName: 'Bob Martinez'    },
+  { email: 'charlie@test.liberludorum.com', password: 'TestUser123!', username: 'charlie_boards', fullName: 'Charlie Nguyen'  },
 ];
 
 // Overlap is intentional — useful for "friends who own this game" testing
 const USER_LIBRARIES: Record<string, string[]> = {
-  alice_gamer:    ['Catan', 'Ticket to Ride', 'Pandemic', 'Carcassonne', '7 Wonders'],
-  bob_plays:      ['Catan', 'Dominion', 'Agricola', 'Splendor', 'Power Grid'],
-  charlie_boards: ['Ticket to Ride', '7 Wonders', 'Carcassonne', 'Dominion', 'Puerto Rico'],
+  alice_gamer: [
+    'Catan', 'Ticket to Ride', 'Pandemic', 'Carcassonne', '7 Wonders',
+    'Wingspan', 'Azul', 'Codenames', 'Terraforming Mars', 'Root',
+  ],
+  bob_plays: [
+    'Catan', 'Dominion', 'Agricola', 'Splendor', 'Power Grid',
+    'Wingspan', 'Azul', 'Everdell', 'Brass: Birmingham', 'Gloomhaven',
+  ],
+  charlie_boards: [
+    'Ticket to Ride', '7 Wonders', 'Carcassonne', 'Dominion', 'Puerto Rico',
+    'Codenames', 'Terraforming Mars', 'Root', 'Everdell', 'Gloomhaven',
+  ],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -48,23 +65,33 @@ const USER_LIBRARIES: Record<string, string[]> = {
 function log(msg: string) { console.log(`  ${msg}`); }
 function section(msg: string) { console.log(`\n▶ ${msg}`); }
 
-async function signInOrSignUp(email: string, password: string, username: string): Promise<string> {
+async function signInOrSignUp(email: string, password: string, username: string, fullName: string): Promise<string> {
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { username } },
+    options: { data: { username, full_name: fullName } },
   });
 
+  let userId: string;
   if (!signUpError && signUpData.session) {
     log(`Created new account: ${email}`);
-    return signUpData.user!.id;
+    userId = signUpData.user!.id;
+  } else {
+    // Account already exists — sign in
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) throw new Error(`Could not sign in as ${email}: ${signInError.message}`);
+    log(`Signed in to existing account: ${email}`);
+    userId = signInData.user.id;
   }
 
-  // Account already exists — sign in
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-  if (signInError) throw new Error(`Could not sign in as ${email}: ${signInError.message}`);
-  log(`Signed in to existing account: ${email}`);
-  return signInData.user.id;
+  // Backfill full_name for pre-existing accounts (handle_new_user only sets it on creation)
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ full_name: fullName })
+    .eq('id', userId);
+  if (updateError) throw new Error(`Could not set full_name for ${email}: ${updateError.message}`);
+
+  return userId;
 }
 
 async function ensureGamesExist(): Promise<Map<string, string>> {
@@ -178,7 +205,7 @@ async function main() {
   section('Creating / signing in test users');
   const userIds: Record<string, string> = {};
   for (const u of TEST_USERS) {
-    userIds[u.username] = await signInOrSignUp(u.email, u.password, u.username);
+    userIds[u.username] = await signInOrSignUp(u.email, u.password, u.username, u.fullName);
   }
 
   // Ensure games exist while authenticated (RLS requires auth for inserts)
@@ -241,14 +268,21 @@ async function main() {
   console.log('  Done! Test accounts ready:');
   console.log('═══════════════════════════════════════════');
   for (const u of TEST_USERS) {
-    console.log(`  ${u.username.padEnd(16)}  ${u.email}  /  ${u.password}`);
+    console.log(`  ${u.fullName.padEnd(16)}  @${u.username.padEnd(16)}  ${u.email}  /  ${u.password}`);
   }
   console.log('\n  Library overlap for testing:');
-  console.log('  • Catan          → Alice, Bob');
-  console.log('  • Ticket to Ride → Alice, Charlie');
-  console.log('  • Carcassonne    → Alice, Charlie');
-  console.log('  • 7 Wonders      → Alice, Charlie');
-  console.log('  • Dominion       → Bob, Charlie');
+  console.log('  • Catan             → Alice, Bob');
+  console.log('  • Ticket to Ride    → Alice, Charlie');
+  console.log('  • Carcassonne       → Alice, Charlie');
+  console.log('  • 7 Wonders         → Alice, Charlie');
+  console.log('  • Dominion          → Bob, Charlie');
+  console.log('  • Wingspan          → Alice, Bob');
+  console.log('  • Azul              → Alice, Bob');
+  console.log('  • Codenames         → Alice, Charlie');
+  console.log('  • Terraforming Mars → Alice, Charlie');
+  console.log('  • Root              → Alice, Charlie');
+  console.log('  • Everdell          → Bob, Charlie');
+  console.log('  • Gloomhaven        → Bob, Charlie');
   console.log('\n  NOTE: If users were just created, Supabase may require');
   console.log('  email confirmation before sign-in works in the app.');
   console.log('  Disable "Email confirmations" in your Supabase Auth settings');

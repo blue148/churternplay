@@ -84,9 +84,9 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+        display: ['Literata', 'Georgia', 'serif'],
         mono:    ['DM Mono', 'monospace'],
-        body:    ['Jost', 'system-ui', 'sans-serif'],
+        body:    ['Atkinson Hyperlegible Next', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '4px',

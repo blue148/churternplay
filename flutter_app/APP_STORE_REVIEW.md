@@ -10,6 +10,36 @@ fix each. Ordered by severity. Created from a pre-submission review on 2026-06-1
 
 ---
 
+## 0. Missing hosted Privacy Policy URL — HARD BLOCKER (both stores)
+
+Neither store submission can proceed without a live Privacy Policy URL — App
+Store Connect requires it for every TestFlight build (internal or external
+testing), and Play Console requires it before testers can be added to a closed
+testing track. Invite-only does not exempt this.
+
+**Why it matters here specifically:** the app has a friends/library-sharing
+feature, so testers' library and profile data becomes visible to other testers
+they connect with — that needs explicit disclosure, plus standard coverage of
+what's collected (email, library/wishlist/session/profile content — see #2
+below), that beta data may be reset/wiped without notice, and how to request
+deletion (already built: `delete-account` edge function).
+
+An in-app "Beta Preview" disclaimer now shows on every auth-screen launch
+(`lib/features/auth/widgets/beta_disclaimer_dialog.dart`) referencing this
+policy via `kPrivacyPolicyUrl`, currently a `TODO_PRIVACY_URL` placeholder.
+
+**Plan:** Host a real privacy policy page (e.g. on the Netlify-deployed
+marketing site) covering the beta-specific points above, then:
+1. Replace `kPrivacyPolicyUrl` in `beta_disclaimer_dialog.dart` with the real
+   URL (and consider re-adding `url_launcher` to make it tappable).
+2. Add the URL to App Store Connect (App Information → Privacy Policy URL)
+   and Play Console (App content → Privacy policy).
+
+**Acceptance:** Privacy Policy URL live and set in both consoles; in-app
+disclaimer links to the real URL.
+
+---
+
 ## 1. Missing Privacy Manifest — Guideline 5.1.2 — HARD BLOCKER
 
 There is no `PrivacyInfo.xcprivacy` in the iOS app target. Apple has required this

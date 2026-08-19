@@ -70,12 +70,47 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
               GamesService.submitBarcodeMapping(barcode, bggId);
             }
           } else if (result['name'] != null) {
-            // No BGG ID — create minimal entry from barcode lookup
-            game = await GamesService.upsertSharedGame({
-              'barcode': barcode,
-              'name': result['name'],
-              'publisher': result['brand'],
-            });
+            // No BGG ID from GameUPC (e.g. token unavailable) — search BGG
+            // by the title we did get, to enrich with full game details
+            // before falling back to a bare entry.
+            setState(() => _statusMessage = 'Matching with BoardGameGeek…');
+            Map<String, dynamic>? bggData;
+            int? matchedBggId;
+            try {
+              final searchResults =
+                  await GamesService.searchBgg(result['name'] as String);
+              matchedBggId = searchResults.isNotEmpty
+                  ? searchResults.first['bgg_id'] as int?
+                  : null;
+              if (matchedBggId != null) {
+                bggData = await GamesService.lookupBggById(matchedBggId);
+              }
+            } catch (_) {
+              // BGG search/lookup failed — fall back to the bare entry below.
+            }
+
+            if (bggData != null && matchedBggId != null) {
+              game = await GamesService.upsertSharedGame({
+                'barcode': barcode,
+                'bgg_id': matchedBggId,
+                'name': bggData['name'] ?? result['name'],
+                'cover_image': bggData['cover_image'],
+                'min_players': bggData['min_players'],
+                'max_players': bggData['max_players'],
+                'playtime_minutes': bggData['playtime_minutes'],
+                'year': (bggData['year'] as int?)?.toString(),
+                'game_category': bggData['game_category'] ?? [],
+                'game_mechanic': bggData['game_mechanic'] ?? [],
+              });
+              GamesService.submitBarcodeMapping(barcode, matchedBggId);
+            } else {
+              // No BGG match either — create minimal entry from barcode lookup
+              game = await GamesService.upsertSharedGame({
+                'barcode': barcode,
+                'name': result['name'],
+                'publisher': result['brand'],
+              });
+            }
           }
         }
       }
@@ -103,7 +138,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
           SnackBar(
             content: Text(
               '${game.name} added to your library',
-              style: GoogleFonts.jost(),
+              style: GoogleFonts.atkinsonHyperlegibleNext(),
             ),
             backgroundColor: AppColors.forest500,
           ),
@@ -117,7 +152,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e', style: GoogleFonts.jost()),
+            content: Text('Error: $e', style: GoogleFonts.atkinsonHyperlegibleNext()),
             backgroundColor: AppColors.clay500,
           ),
         );
@@ -135,11 +170,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
           children: [
             const Icon(Icons.search_off, size: 40, color: AppColors.ink200),
             const SizedBox(height: 12),
-            Text('Game not found', style: GoogleFonts.cormorantGaramond(fontSize: 22)),
+            Text('Game not found', style: GoogleFonts.literata(fontSize: 22)),
             const SizedBox(height: 8),
             Text(
               'Barcode $barcode is not in the database yet.',
-              style: GoogleFonts.jost(fontSize: 13, color: AppColors.ink300),
+              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink300),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -184,7 +219,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: Text('Scan Game',
-            style: GoogleFonts.cormorantGaramond(color: Colors.white, fontSize: 22)),
+            style: GoogleFonts.literata(color: Colors.white, fontSize: 22)),
       ),
       body: Stack(
         children: [
@@ -222,7 +257,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                     const SizedBox(height: 16),
                     Text(
                       _statusMessage ?? 'Processing…',
-                      style: GoogleFonts.jost(color: Colors.white, fontSize: 14),
+                      style: GoogleFonts.atkinsonHyperlegibleNext(color: Colors.white, fontSize: 14),
                     ),
                   ],
                 ),
@@ -238,7 +273,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
               child: Text(
                 'Point camera at a game barcode',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.jost(
+                style: GoogleFonts.atkinsonHyperlegibleNext(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 13,
                 ),

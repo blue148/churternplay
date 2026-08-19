@@ -137,14 +137,14 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
           Row(
             children: [
               Text('Filters',
-                  style: GoogleFonts.cormorantGaramond(
+                  style: GoogleFonts.literata(
                       fontSize: 24, color: AppColors.ink500)),
               const Spacer(),
               if (_draft.hasActiveFilters)
                 TextButton(
                   onPressed: () => _update(_draft.cleared()),
                   child: Text('Clear all',
-                      style: GoogleFonts.jost(
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
                           fontSize: 13, color: AppColors.clay400)),
                 ),
               IconButton(
@@ -174,7 +174,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('NUMBER OF PLAYERS',
-            style: GoogleFonts.jost(
+            style: GoogleFonts.atkinsonHyperlegibleNext(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
@@ -188,7 +188,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
               FilterChip(
                 label: Text(
                   count == 6 ? '6+' : '$count',
-                  style: GoogleFonts.jost(
+                  style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontSize: 12,
                     color: _draft.playerCounts.contains(count)
                         ? Colors.white
@@ -226,7 +226,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
         Row(
           children: [
             Text('NUMBER OF PLAYS',
-                style: GoogleFonts.jost(
+                style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.2,
@@ -236,7 +236,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
               _draft.minPlays == 0 && _draft.maxPlays == null
                   ? 'Any'
                   : '${_draft.minPlays} – ${_draft.maxPlays ?? '$maxPlays+'}',
-              style: GoogleFonts.jost(fontSize: 12, color: AppColors.ink400),
+              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink400),
             ),
           ],
         ),
@@ -289,7 +289,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
             ),
             child: Text(
               matchCount == 1 ? 'Show 1 game' : 'Show $matchCount games',
-              style: GoogleFonts.jost(
+              style: GoogleFonts.atkinsonHyperlegibleNext(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white),

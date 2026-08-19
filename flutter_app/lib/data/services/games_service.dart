@@ -100,7 +100,8 @@ abstract class GamesService {
   static Future<List<Map<String, dynamic>>> searchBgg(String name) async {
     final response = await supabase.functions
         .invoke('bgg-lookup', body: {'searchName': name});
-    return List<Map<String, dynamic>>.from(response.data as List);
+    final data = response.data as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(data['results'] as List? ?? []);
   }
 
   static Future<void> submitBarcodeMapping(
@@ -124,11 +125,13 @@ abstract class GamesService {
   }
 
   static Future<void> addGameToWishlist(
-      String userId, String gameId, String priority) async {
+      String userId, String gameId, String priority,
+      {String? notes}) async {
     await supabase.from('user_wishlist').insert({
       'user_id': userId,
       'game_id': gameId,
       'priority': priority,
+      if (notes != null && notes.isNotEmpty) 'notes': notes,
     });
   }
 

@@ -40,7 +40,7 @@ Future<T?> showSortBottomSheet<T>({
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(title,
-                style: GoogleFonts.cormorantGaramond(
+                style: GoogleFonts.literata(
                     fontSize: 22, color: AppColors.ink500)),
           ),
           for (final option in options)
@@ -48,7 +48,7 @@ Future<T?> showSortBottomSheet<T>({
               dense: true,
               title: Text(
                 option.label,
-                style: GoogleFonts.jost(
+                style: GoogleFonts.atkinsonHyperlegibleNext(
                   fontSize: 14,
                   color: AppColors.ink500,
                   fontWeight: option.value == current

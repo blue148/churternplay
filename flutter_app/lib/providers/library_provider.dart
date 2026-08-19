@@ -5,6 +5,20 @@ import '../data/models/library_filter.dart';
 import '../data/services/games_service.dart';
 import 'auth_provider.dart';
 
+/// Set right before navigating to `/library` (e.g. from the bottom nav's
+/// long-press section menu) to land on a specific tab — 0: My Library,
+/// 1: Wishlist, 2: Friend's Games. The library screen watches this to jump
+/// tabs, then clears it back to null so it doesn't re-trigger later.
+class PendingLibraryTabNotifier extends Notifier<int?> {
+  @override
+  int? build() => null;
+  void set(int? value) => state = value;
+}
+
+final pendingLibraryTabProvider =
+    NotifierProvider<PendingLibraryTabNotifier, int?>(
+        PendingLibraryTabNotifier.new);
+
 class LibraryNotifier extends AsyncNotifier<List<LibraryEntry>> {
   @override
   Future<List<LibraryEntry>> build() async {

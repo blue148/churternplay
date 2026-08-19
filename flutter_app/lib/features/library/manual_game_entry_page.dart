@@ -71,7 +71,8 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
             ? 'No games found. Try a different search term.'
             : null;
       });
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('BGG search failed: $e\n$st');
       if (!mounted) return;
       setState(() => _error = 'Failed to search BoardGameGeek. Please try again.');
     } finally {
@@ -179,7 +180,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
         SnackBar(
           content: Text(
             '${game.name} added to your library',
-            style: GoogleFonts.jost(),
+            style: GoogleFonts.atkinsonHyperlegibleNext(),
           ),
           backgroundColor: AppColors.forest500,
         ),
@@ -237,12 +238,12 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
         children: [
           Text(
             "We couldn't match that barcode. Search for the game below.",
-            style: GoogleFonts.jost(fontSize: 13, color: AppColors.ink400),
+            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400),
           ),
           const SizedBox(height: 4),
           Text(
             'Barcode: ${widget.barcode}',
-            style: GoogleFonts.jost(
+            style: GoogleFonts.atkinsonHyperlegibleNext(
                 fontSize: 12,
                 color: AppColors.ink300,
                 fontWeight: FontWeight.w600),
@@ -322,7 +323,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       ),
       child: Text(
         message,
-        style: GoogleFonts.jost(fontSize: 13, color: AppColors.clay500),
+        style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.clay500),
       ),
     );
   }
@@ -340,7 +341,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
           ),
           const SizedBox(width: 12),
           Text('Loading game details…',
-              style: GoogleFonts.jost(color: AppColors.ink300)),
+              style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.ink300)),
         ],
       ),
     );
@@ -352,7 +353,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       children: [
         const SizedBox(height: 12),
         Text('Select your game',
-            style: GoogleFonts.jost(
+            style: GoogleFonts.atkinsonHyperlegibleNext(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.ink400)),
@@ -369,11 +370,11 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
             ),
             child: ListTile(
               title: Text(r['name'] as String? ?? 'Unknown',
-                  style: GoogleFonts.jost(
+                  style: GoogleFonts.atkinsonHyperlegibleNext(
                       fontWeight: FontWeight.w600, color: AppColors.ink500)),
               subtitle: Text(
                 year != null ? 'Published $year' : 'Year unknown',
-                style: GoogleFonts.jost(fontSize: 12, color: AppColors.ink300),
+                style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink300),
               ),
               trailing:
                   const Icon(Icons.chevron_right, color: AppColors.ink200),
@@ -434,15 +435,15 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(name,
-                            style: GoogleFonts.cormorantGaramond(
+                            style: GoogleFonts.literata(
                                 fontSize: 22, color: AppColors.ink500)),
                         if (year != null)
                           Text('Published $year',
-                              style: GoogleFonts.jost(
+                              style: GoogleFonts.atkinsonHyperlegibleNext(
                                   fontSize: 13, color: AppColors.ink300)),
                         if (publisher != null)
                           Text(publisher,
-                              style: GoogleFonts.jost(
+                              style: GoogleFonts.atkinsonHyperlegibleNext(
                                   fontSize: 13, color: AppColors.ink300)),
                       ],
                     ),
@@ -517,7 +518,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
         Icon(icon, size: 16, color: AppColors.ink300),
         const SizedBox(width: 4),
         Text(label,
-            style: GoogleFonts.jost(fontSize: 13, color: AppColors.ink400)),
+            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400)),
       ],
     );
   }

@@ -207,7 +207,7 @@ class _DiceRollerPageState extends State<DiceRollerPage>
               Expanded(child: _buildDiceArea()),
               const SizedBox(height: 8),
               Text('TOTAL',
-                  style: GoogleFonts.jost(
+                  style: GoogleFonts.atkinsonHyperlegibleNext(
                       fontSize: 10, letterSpacing: 2, color: AppColors.sky400)),
               Text(_total?.toString() ?? '—',
                   key: const ValueKey('total-text'),
@@ -259,7 +259,7 @@ class _DiceRollerPageState extends State<DiceRollerPage>
                   size: 72, color: AppColors.ink100),
               const SizedBox(height: 24),
               Text('Add dice above,\nthen roll or shake',
-                  style: GoogleFonts.cormorantGaramond(
+                  style: GoogleFonts.literata(
                       fontSize: 22, color: AppColors.ink300),
                   textAlign: TextAlign.center),
             ],
@@ -334,7 +334,7 @@ class _DiePoolSelector extends StatelessWidget {
               DieFace(sides: sides, value: sides, size: 28),
               const SizedBox(width: 12),
               Text('d$sides',
-                  style: GoogleFonts.jost(
+                  style: GoogleFonts.atkinsonHyperlegibleNext(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppColors.ink600)),
