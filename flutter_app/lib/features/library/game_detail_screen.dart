@@ -11,6 +11,7 @@ import '../../data/models/library_entry.dart';
 import '../../data/models/victory_stats.dart';
 import '../../providers/library_provider.dart';
 import 'widgets/log_play_sheet.dart';
+import 'widgets/suggest_to_friend_sheet.dart';
 
 /// Full-screen detail view for a single library entry, reachable from any
 /// tab (dashboard tiles, library cards). Reads the live entry out of
@@ -67,6 +68,8 @@ class GameDetailScreen extends ConsumerWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.ink400),
             itemBuilder: (_) => [
+              const PopupMenuItem(
+                  value: 'suggest', child: Text('Suggest to a Friend')),
               PopupMenuItem(
                 value: 'sale',
                 child: Text(
@@ -77,6 +80,8 @@ class GameDetailScreen extends ConsumerWidget {
             ],
             onSelected: (action) {
               switch (action) {
+                case 'suggest':
+                  showSuggestToFriendSheet(context, game: game);
                 case 'sale':
                   ref
                       .read(libraryProvider.notifier)

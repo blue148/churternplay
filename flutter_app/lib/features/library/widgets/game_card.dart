@@ -23,6 +23,7 @@ class GameCard extends StatelessWidget {
   final VoidCallback? onToggleForSale;
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
+  final VoidCallback? onSuggestToFriend;
 
   const GameCard({
     super.key,
@@ -36,6 +37,7 @@ class GameCard extends StatelessWidget {
     this.onToggleForSale,
     this.onAddToWishlist,
     this.wishlistStatus,
+    this.onSuggestToFriend,
   });
 
   @override
@@ -50,7 +52,8 @@ class GameCard extends StatelessWidget {
             onLogPlay: onLogPlay,
             onToggleForSale: onToggleForSale,
             onAddToWishlist: onAddToWishlist,
-            wishlistStatus: wishlistStatus)
+            wishlistStatus: wishlistStatus,
+            onSuggestToFriend: onSuggestToFriend)
         : _GridCard(
             entry: entry,
             onFavorite: onFavorite,
@@ -60,7 +63,8 @@ class GameCard extends StatelessWidget {
             onLogPlay: onLogPlay,
             onToggleForSale: onToggleForSale,
             onAddToWishlist: onAddToWishlist,
-            wishlistStatus: wishlistStatus);
+            wishlistStatus: wishlistStatus,
+            onSuggestToFriend: onSuggestToFriend);
   }
 }
 
@@ -76,6 +80,7 @@ class _GridCard extends StatelessWidget {
   final VoidCallback? onToggleForSale;
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
+  final VoidCallback? onSuggestToFriend;
 
   const _GridCard({
     required this.entry,
@@ -87,6 +92,7 @@ class _GridCard extends StatelessWidget {
     this.onToggleForSale,
     this.onAddToWishlist,
     this.wishlistStatus,
+    this.onSuggestToFriend,
   });
 
   @override
@@ -224,7 +230,8 @@ class _GridCard extends StatelessWidget {
                         onLogPlay: onLogPlay,
                         onToggleForSale: onToggleForSale,
                         onAddToWishlist: onAddToWishlist,
-                        wishlistStatus: wishlistStatus),
+                        wishlistStatus: wishlistStatus,
+                        onSuggestToFriend: onSuggestToFriend),
                   ],
                 ),
               ),
@@ -248,6 +255,7 @@ class _ListCard extends StatelessWidget {
   final VoidCallback? onToggleForSale;
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
+  final VoidCallback? onSuggestToFriend;
 
   const _ListCard({
     required this.entry,
@@ -259,6 +267,7 @@ class _ListCard extends StatelessWidget {
     this.onToggleForSale,
     this.onAddToWishlist,
     this.wishlistStatus,
+    this.onSuggestToFriend,
   });
 
   @override
@@ -401,6 +410,7 @@ class _ListCard extends StatelessWidget {
                     onToggleForSale: onToggleForSale,
                     onAddToWishlist: onAddToWishlist,
                     wishlistStatus: wishlistStatus,
+                    onSuggestToFriend: onSuggestToFriend,
                   ),
                 ],
               ),
@@ -453,6 +463,7 @@ class _MenuButton extends StatelessWidget {
   final VoidCallback? onToggleForSale;
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
+  final VoidCallback? onSuggestToFriend;
 
   const _MenuButton({
     required this.entry,
@@ -463,6 +474,7 @@ class _MenuButton extends StatelessWidget {
     this.onToggleForSale,
     this.onAddToWishlist,
     this.wishlistStatus,
+    this.onSuggestToFriend,
   });
 
   @override
@@ -474,7 +486,8 @@ class _MenuButton extends StatelessWidget {
         onEdit != null ||
         onLogPlay != null ||
         onToggleForSale != null ||
-        wishlistStatus != null;
+        wishlistStatus != null ||
+        onSuggestToFriend != null;
     if (!hasAnyAction) return const SizedBox.shrink();
 
     return PopupMenuButton<String>(
@@ -521,6 +534,11 @@ class _MenuButton extends StatelessWidget {
             child: _menuItem(
                 Icons.add_circle_outline, 'Log Play (${entry.playCount})'),
           ),
+        if (onSuggestToFriend != null)
+          PopupMenuItem(
+            value: 'suggest',
+            child: _menuItem(Icons.send_outlined, 'Suggest to a Friend'),
+          ),
         if (onToggleForSale != null)
           PopupMenuItem(
             value: 'sale',
@@ -552,6 +570,8 @@ class _MenuButton extends StatelessWidget {
             onDelete?.call();
           case 'wishlist':
             onAddToWishlist?.call();
+          case 'suggest':
+            onSuggestToFriend?.call();
         }
       },
     );

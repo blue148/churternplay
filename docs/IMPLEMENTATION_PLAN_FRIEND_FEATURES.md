@@ -296,6 +296,12 @@ update but the sender cannot.
 
 ## Phase 4 — Push: UI
 
+> **Status: Done.** `flutter analyze`/`flutter test` clean (16/16); the
+> Accept/Dismiss data flow verified directly against the live "Board Game
+> Library" Supabase project (sonderman → alice), matching this section's
+> manual verification steps. UI itself (friend picker, inbox rows, badge)
+> not yet tap-tested on a device/simulator.
+
 **Scope:** §13.2's user-facing flow, completing the feature.
 
 - **Send:** "Suggest to a Friend" action added to the Game Detail Screen
@@ -315,16 +321,64 @@ update but the sender cannot.
   (check `friends_screen.dart`/nav shell for the existing pattern before
   building a new one).
 
-**Files:** friend picker widget (new), Wishlist Tab screen (extended), Game
-Detail Screen + Library card overflow menus (extended), nav/badge widget
-(extended if a reusable one exists, otherwise new).
+**What actually shipped:**
 
-**Verification:** two seeded test accounts — send a suggestion from A to B,
-confirm it appears in B's Wishlist Tab inbox, confirm Accept creates a real
-`user_wishlist` row for B and the game shows up in B's Wishlist Tab proper,
-confirm Dismiss removes it from the inbox with no wishlist row created.
+- `SuggestToFriendSheet` (`lib/features/library/widgets/suggest_to_friend_sheet.dart`)
+  — same bottom-sheet shape as `add_to_wishlist_sheet.dart`/`log_play_sheet.dart`.
+  Loads accepted friends via `FriendsService.getUserFriends`, reuses the
+  shared `FriendRow` widget with a tap-to-select checkmark instead of a
+  per-row action button (single friend selected at a time), optional note
+  field, "Send Suggestion" footer button disabled until a friend is picked.
+  Empty-friends state points to Profile → Friends. Wired into both entry
+  points via `showSuggestToFriendSheet(context, game: game)`: Game Detail
+  Screen's overflow menu and `GameCard`'s overflow menu (new
+  `onSuggestToFriend` param, threaded through `_GridCard`/`_ListCard`/
+  `_MenuButton` the same way Phase 2's wishlist action was) — My Library's
+  own cards pass it, Friend's Library cards don't (not relevant there).
+- `suggestionsProvider` (`lib/providers/suggestions_provider.dart`),
+  `AsyncNotifierProvider<SuggestionsNotifier, List<GameSuggestion>>` loading
+  `SuggestionsService.getPendingSuggestions`. `accept()` calls
+  `ref.read(wishlistProvider.notifier).addGame(...)` — the exact Phase 2
+  path, carrying the sender's note into the wishlist entry's notes — then
+  `SuggestionsService.acceptSuggestion`; `dismiss()` calls
+  `SuggestionsService.dismissSuggestion`. Both optimistically remove the
+  suggestion from local state first, rolling back on failure (same pattern
+  as `WishlistNotifier`/`LibraryNotifier`).
+- **"Suggested by Friends" section** added to the Wishlist Tab
+  (`library_screen.dart`'s `_WishlistTabState`), above the regular list:
+  a `SUGGESTED BY FRIENDS (N)` header (matching the all-caps letter-spaced
+  header convention already used for Requests/Sent/Friends sections
+  elsewhere) followed by `_SuggestionRow`s (cover, game name, "From
+  {sender}", note, Accept/Dismiss). The tab's `data:` builder now renders
+  suggestions and wishlist entries in one combined `ListView` instead of
+  two separate states, so the empty-state check and the highlight-scroll
+  logic (Phase 2's follow-up) both account for suggestions being present
+  even when the wishlist itself is empty.
+- **Badge**: no existing "pending count on a tab" pattern was found in the
+  codebase to reuse (the Friends tab's equivalent is an in-content banner,
+  not a tab-label badge) — used Flutter's built-in `Badge` widget wrapping
+  the "Wishlist" tab label instead, `isLabelVisible` gated on
+  `suggestionsProvider`'s count.
 
-**→ Push is now fully shippable.**
+**Deviation from the original sketch:** `acceptSuggestion(suggestionId, {userId, gameId})` in Phase 3's draft became two separate calls at the UI layer (`SuggestionsNotifier.accept`) rather than one method — see Phase 3's own deviation note for why.
+
+**Files:** `suggest_to_friend_sheet.dart` (new), `suggestions_provider.dart`
+(new), `game_card.dart` (`onSuggestToFriend` param), `game_detail_screen.dart`
+(overflow menu item), `library_screen.dart` (My Library card wiring,
+Wishlist tab suggestions section, tab badge).
+
+**Verification performed** (data layer, direct-SQL-with-simulated-RLS
+against the live project, same technique as Phases 0–3): sender (sonderman)
+sends a suggestion to a friend (alice); recipient's pending-inbox query
+returns it; Accept as recipient — insert into `user_wishlist` (own row,
+satisfies existing RLS) + suggestion marked `accepted` — confirmed a real
+wishlist row was created for alice carrying the sender's note, then cleaned
+up; Dismiss as recipient — suggestion marked `dismissed`, confirmed zero
+wishlist rows created, rolled back. **Still needed:** an actual device/
+simulator tap-through of the new UI (friend picker, inbox rows, badge,
+overflow menu placement) — not yet done this session.
+
+**→ Push is now fully shippable** (pending the UI tap-through above).
 
 ---
 

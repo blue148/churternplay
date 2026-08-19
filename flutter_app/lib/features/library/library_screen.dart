@@ -7,11 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/supabase_client.dart';
 import '../../data/models/friend.dart';
+import '../../data/models/game_suggestion.dart';
 import '../../data/models/library_entry.dart';
 import '../../data/models/wishlist_entry.dart';
 import '../../data/services/friends_service.dart';
 import '../../data/models/library_filter.dart';
 import '../../providers/library_provider.dart';
+import '../../providers/suggestions_provider.dart';
 import '../../providers/wishlist_provider.dart';
 import '../profile/friends_screen.dart';
 import 'widgets/friend_row.dart';
@@ -20,6 +22,7 @@ import 'widgets/library_filter_sheet.dart';
 import 'widgets/log_play_sheet.dart';
 import 'widgets/quick_filter_chips.dart';
 import 'widgets/sort_bottom_sheet.dart';
+import 'widgets/suggest_to_friend_sheet.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -69,6 +72,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     });
 
     final onCatalogue = _tabs.index == 0;
+    final suggestionCount =
+        ref.watch(suggestionsProvider).asData?.value.length ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -99,10 +104,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
           unselectedLabelColor: AppColors.ink300,
           indicatorColor: AppColors.clay400,
           indicatorWeight: 2,
-          tabs: const [
-            Tab(text: 'My Library'),
-            Tab(text: 'Wishlist'),
-            Tab(text: 'Friend\'s Games'),
+          tabs: [
+            const Tab(text: 'My Library'),
+            Tab(
+              child: Badge(
+                label: Text('$suggestionCount'),
+                isLabelVisible: suggestionCount > 0,
+                backgroundColor: AppColors.plum400,
+                child: const Text('Wishlist'),
+              ),
+            ),
+            const Tab(text: 'Friend\'s Games'),
           ],
         ),
       ),
@@ -134,6 +146,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             .read(libraryProvider.notifier)
             .toggleForSale(entry.id, !entry.forSale),
         onLogPlay: () => showLogPlaySheet(context, entry),
+        onSuggestToFriend: () =>
+            showSuggestToFriendSheet(context, game: entry.game),
       );
 
   void _confirmDelete(LibraryEntry entry) {
@@ -654,6 +668,8 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
             ),
             data: (entries) {
               final items = _filtered(entries);
+              final suggestions =
+                  ref.watch(suggestionsProvider).asData?.value ?? const [];
 
               if (highlightGameId != null) {
                 final inEntries =
@@ -682,7 +698,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                 }
               }
 
-              if (items.isEmpty) {
+              if (items.isEmpty && suggestions.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -709,16 +725,49 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
               }
               return RefreshIndicator(
                 onRefresh: () => ref.read(wishlistProvider.notifier).refresh(),
-                child: ListView.separated(
+                child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 6),
-                  itemBuilder: (_, i) => _WishlistItemRow(
-                    key: _keyFor(items[i].id),
-                    entry: items[i],
-                    onMoveToLibrary: () => _confirmMoveToLibrary(items[i]),
-                    onDelete: () => _confirmDelete(items[i]),
-                  ),
+                  children: [
+                    if (suggestions.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                            'SUGGESTED BY FRIENDS (${suggestions.length})',
+                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.5,
+                                color: AppColors.plum400)),
+                      ),
+                      ...suggestions.map((s) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _SuggestionRow(
+                              suggestion: s,
+                              onAccept: () => _acceptSuggestion(s),
+                              onDismiss: () => _dismissSuggestion(s),
+                            ),
+                          )),
+                      const SizedBox(height: 12),
+                    ],
+                    if (items.isNotEmpty)
+                      ...items.map((e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: _WishlistItemRow(
+                              key: _keyFor(e.id),
+                              entry: e,
+                              onMoveToLibrary: () => _confirmMoveToLibrary(e),
+                              onDelete: () => _confirmDelete(e),
+                            ),
+                          ))
+                    else if (suggestions.isNotEmpty)
+                      Text(
+                        entries.isEmpty
+                            ? 'Your wishlist is empty'
+                            : 'No results',
+                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                            fontSize: 13, color: AppColors.ink300),
+                      ),
+                  ],
                 ),
               );
             },
@@ -795,6 +844,154 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                 style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _acceptSuggestion(GameSuggestion suggestion) async {
+    try {
+      await ref.read(suggestionsProvider.notifier).accept(suggestion);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Added ${suggestion.game?.name ?? 'the game'} to your wishlist',
+                style: GoogleFonts.atkinsonHyperlegibleNext()),
+            backgroundColor: AppColors.forest500,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to accept suggestion')),
+        );
+      }
+    }
+  }
+
+  Future<void> _dismissSuggestion(GameSuggestion suggestion) async {
+    try {
+      await ref.read(suggestionsProvider.notifier).dismiss(suggestion.id);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to dismiss suggestion')),
+        );
+      }
+    }
+  }
+}
+
+class _SuggestionRow extends StatelessWidget {
+  final GameSuggestion suggestion;
+  final VoidCallback onAccept;
+  final VoidCallback onDismiss;
+
+  const _SuggestionRow({
+    required this.suggestion,
+    required this.onAccept,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final game = suggestion.game;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.plum200),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 56,
+              height: 56,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: game?.coverImage != null
+                    ? CachedNetworkImage(
+                        imageUrl: game!.coverImage!,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) =>
+                            Container(color: AppColors.parchment100),
+                        errorWidget: (_, __, ___) =>
+                            Container(color: AppColors.parchment100),
+                      )
+                    : Container(
+                        color: AppColors.parchment100,
+                        child: const Icon(Icons.menu_book_outlined,
+                            size: 24, color: AppColors.ink100),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(game?.name ?? 'Unknown game',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.ink600)),
+                  const SizedBox(height: 2),
+                  Text('From ${suggestion.sender?.username ?? 'a friend'}',
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                          fontSize: 12, color: AppColors.plum400)),
+                  if (suggestion.note != null &&
+                      suggestion.note!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(suggestion.note!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                            fontSize: 12, color: AppColors.ink300)),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: onAccept,
+                        icon: const Icon(Icons.check, size: 16),
+                        label: Text('Accept',
+                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                                fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.forest500,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      TextButton.icon(
+                        onPressed: onDismiss,
+                        icon: const Icon(Icons.close, size: 16),
+                        label: Text('Dismiss',
+                            style:
+                                GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12)),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.ink300,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

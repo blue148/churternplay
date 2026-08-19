@@ -56,7 +56,9 @@ and **shake-to-pick-first-player**.
 Built on **go_router** with a `StatefulShellRoute.indexedStack` (persistent tab
 state) and an auth redirect guard (unauthenticated → `/auth`).
 
-Bottom navigation (`AppShell` → Material 3 `NavigationBar`):
+Bottom navigation (`AppShell` → custom `_AppBottomNavBar`, replacing the stock
+Material 3 `NavigationBar` so each item can carry both a tap and a long-press
+handler; visual style — pill indicator, icon/label colors — is unchanged):
 
 | Tab | Route | Purpose |
 |-----|-------|---------|
@@ -64,6 +66,23 @@ Bottom navigation (`AppShell` → Material 3 `NavigationBar`):
 | **Game Nite** | `/game-nite` | Tool launcher + five tool sub-pages |
 | **My Games** | `/library` | Collection, wishlist, friends; add flows |
 | **Profile** | `/profile` | Account management |
+
+A persistent **global Quick Actions button** (icon-only speed dial; see §4.2)
+floats above the nav bar on every tab except Dashboard, which already
+surfaces the same four actions as a full labeled row.
+
+**Long-press section menus** — long-pressing the Game Nite, My Games, or
+Profile tab opens a bottom sheet that jumps straight to one of that tab's
+sections, bypassing the tab's own landing screen. Dashboard has no
+sub-sections, so it has no long-press menu.
+- **Game Nite** → Game Picker, First Player, Turn Timer, Game Timer, Dice
+  Roller — same five tool routes as the launcher screen (§4.10).
+- **My Games** → My Library, Wishlist, Friend's Games — navigates to
+  `/library` and selects the matching `TabController` index via
+  `pendingLibraryTabProvider`, an `int?` Riverpod notifier the library screen
+  watches once and then resets to `null`, mirroring the existing
+  `pendingWishlistHighlightProvider` pattern (§4.8).
+- **Profile** → Friends, Profile Details, Settings (§4.1).
 
 Sub-routes:
 - `/game-nite/{chooser,first-player,turn-timer,game-timer,dice-roller}`
@@ -73,6 +92,11 @@ Sub-routes:
 - `/library/friend/:friendId` — read-only friend's-library view (§13.1, done)
 - `/profile/friends` — friend management: requests, sent, friends list,
   discovery/add (§4.9, done)
+- `/profile/details` — **Profile Details** (§4.1); placeholder screen for
+  editing avatar/username/bio, reachable from the Profile menu and its
+  long-press entry
+- `/profile/settings` — **Settings** (§4.1); placeholder screen, reachable
+  from the Profile menu and its long-press entry
 
 > §14 (planned) adds `/game-nite/log-play` and/or `/library/log-play` — a
 > BGG-search dialog matching `/library/manual-add`'s pattern, feeding into the
@@ -94,21 +118,51 @@ Sub-routes:
 **Profile Screen (`profile_screen.dart`)**
 - Displays avatar (initials fallback), username, bio.
 - Shows aggregate stats: total games owned, favorites count.
+- Menu: **Friends** (→ `/profile/friends`, §4.9, done) · **Profile Details**
+  (→ `/profile/details`, placeholder for now — will hold avatar/username/bio
+  editing) · **Settings** (→ `/profile/settings`, placeholder) · **Privacy
+  Policy** (done).
+  - Wishlist was removed from this menu — it's covered by My Games →
+    Wishlist (§4.3), reachable there or via the My Games long-press menu
+    (§3).
+  - Shared Libraries was removed for now. A "who can see my library"
+    settings screen governing the same `shared_library_access` grants
+    (§13.1) is still a possible future home for this, not necessarily
+    distinct from the new Settings placeholder.
 - **Sign Out** — with confirmation.
 - **Delete Account** — confirmation drawer warns about cascading data deletion;
   calls the `delete-account` Edge Function, which removes storage files, profile
   row, library/wishlist/session/friend records (required for App Store
   Guideline 5.1.1(v)).
 
-> §14.4 (planned) adds a "Play History" row to the Profile menu, alongside the
-> existing Wishlist/Friends/Shared Libraries/Settings stub rows.
+> §14.4 (planned) adds a "Play History" row to the Profile menu, alongside
+> the Friends/Profile Details/Settings rows above.
 
 ---
 
 ### 4.2 Dashboard (`dashboard_screen.dart`)
 
-**Quick Actions panel** — three tappable shortcuts to Game Nite tools:
-- Game Picker, First Player, Turn Timer.
+**Quick Actions panel** — the app's four most-visited day-to-day actions, laid
+out as a single row of four compact, equal-width cards (icon + label):
+- Game Picker, First Player, Turn Timer, **Add Game** (opens the same
+  Scan Barcode / Search by Title modal as the Library flow — see §4.3).
+
+Labels are sized for legibility at this reduced card width/height rather than
+being truncated; cards wrap to two lines instead of clipping if needed.
+
+**Global Quick Actions button (`quick_actions_speed_dial.dart`, all other tabs)**
+— once the user navigates off Dashboard, the same four actions remain within
+thumb's reach via an expandable, icon-only FAB living in `AppShell`, floating
+bottom-right just above the bottom nav bar:
+- Collapsed state: a single circular button (bolt icon) — chosen over a `+`
+  since Add Game is only one of the four actions, not the button's sole
+  purpose.
+- Tapping it fans out four small icon-only circular buttons (no labels) above
+  it — Game Picker, First Player, Turn Timer, Add Game, in that order — behind
+  a dismissible scrim; the bolt icon crossfades to a close (`×`) icon.
+- Tapping a mini action, the scrim, or the toggle button again collapses it.
+- Hidden on the Dashboard tab itself, since the full labeled row already
+  covers this need there.
 
 **Most Played** — horizontal scrollable row of the top 6 most-played games;
 shows cover image + play-count badge; taps navigate to game detail.
@@ -183,9 +237,12 @@ Active-filter badge on the filter icon shows the count of active facets.
 search for one-tap filtering.
 
 **Game card actions** (via per-card overflow menu):
-- Log Play · Toggle Favorite · Mark / Unmark for Sale · Remove from Library.
+- Log Play · **Suggest to a Friend** (§13.2, done) · Toggle Favorite ·
+  Mark / Unmark for Sale · Remove from Library.
 
-**Floating action button** — opens a modal with two options:
+**Add Game** — reached via the Dashboard's Quick Actions row or the global
+Quick Actions button (§4.2), not a per-screen FAB on this tab. Opens a modal
+with two options:
 - Scan Barcode (→ scanner)
 - Search by Title (→ manual entry)
 
@@ -248,8 +305,37 @@ rendered as chips.
 
 **Actions:**
 - Star icon: toggle favorite.
-- Overflow menu: Mark / Unmark for Sale · Remove from Library.
+- Overflow menu: **Suggest to a Friend** (§13.2, done) · Mark / Unmark for
+  Sale · Remove from Library.
 - "Log Play" bottom button → Log Play sheet.
+
+> **Planned:** two Game Detail Screen gaps, both not yet built.
+>
+> 1. **Better tag/pill presentation.** Today's Tags section (`_TagsSection`
+>    in `game_detail_screen.dart`) flattens `game.gameType` + `gameCategory`
+>    + `gameMechanic` + `gameFamily` into one undifferentiated `Wrap` of
+>    identical pill chips, unlabeled and uncapped — a well-tagged BGG game
+>    can easily carry 15–20 mechanics/categories combined, so the section
+>    sprawls with no way to tell a "type" pill from a "mechanic" pill.
+>    Needs: group into labeled sub-rows by facet (Type / Category / Mechanic
+>    / Family — the same four facets the Library filter sheet already uses,
+>    §4.3), and cap each facet's visible pills with a "+N more" expand,
+>    mirroring the truncation pattern Play History already uses above.
+> 2. **BGG written summary/description.** The `bgg-lookup` Edge Function
+>    already parses a `description` field from BGG's XML `<description>`
+>    node (`supabase/functions/bgg-lookup/index.ts`), and the web app's BGG
+>    search/manual-entry types already carry it (`src/lib/bgg.ts`,
+>    `ManualGameEntry.tsx`) — but it's never persisted (no `description`
+>    column on `shared_games`) or displayed on either platform today. Needs:
+>    a `description` column on `shared_games`; threading it through
+>    `upsertSharedGame` and `Game.fromJson` (`game.dart`, which has no
+>    `description` field yet); and a new "About" section on this screen
+>    rendering it — below the Hero section, above Tags — truncated to ~4
+>    lines with a "Read more" expand (BGG descriptions run long and often
+>    carry HTML-entity boilerplate the Edge Function already decodes). Hidden
+>    entirely for games added without BGG enrichment (manual entry with no
+>    match, or BGG returned no description) rather than showing an empty
+>    section.
 
 ---
 
@@ -281,6 +367,14 @@ Modal bottom sheet for recording a completed game session.
 
 ### 4.8 Wishlist Tab
 
+- **Suggested by Friends** (§13.2, done) — a section above the regular
+  wishlist list, shown only when there's at least one pending incoming
+  suggestion: header "SUGGESTED BY FRIENDS (N)", then a row per suggestion
+  (game cover/name, "From {sender}", optional note, **Accept** / **Dismiss**
+  actions). Rendered as part of the same scrollable list as the wishlist
+  proper, not a separate panel, so it stays visible even when the wishlist
+  itself is empty. The Wishlist tab label also carries a numeric badge with
+  the pending count.
 - Search field.
 - Priority filter chips: All / High / Medium / Low.
 - Sort bottom sheet: Priority (default) · Name A–Z / Z–A · Recently Added ·
@@ -290,12 +384,13 @@ Modal bottom sheet for recording a completed game session.
   - Move to Library · Remove from Wishlist.
 - Empty state: icon + "Your wishlist is empty."
 
-> §13.1 **(done)** added mobile's first add-to-wishlist entry point: pulling
-> a game from a friend's library. Landing here from that flow scrolls the
-> newly added entry into view automatically, clearing the search/priority
-> filter first if either would otherwise hide it. §13.2 (planned) adds a
-> second entry point — accepting an incoming suggestion from a friend, shown
-> as a new "Suggested by Friends" section above this list.
+> §13.1 and §13.2 **(both done)** gave mobile its first two add-to-wishlist
+> entry points, both routing through the same `WishlistNotifier.addGame`
+> insert path: pulling a game from a friend's library (§13.1) and accepting
+> an incoming suggestion (§13.2, the section above). Landing on this tab
+> after either action scrolls/surfaces the result automatically — the newly
+> added entry for Pull (clearing the search/priority filter first if either
+> would otherwise hide it), the suggestions section itself for Push.
 
 ---
 
@@ -339,7 +434,7 @@ icon chips leading to five tools.
 > into the flow described in §14, for capturing plays of games not in the
 > user's library (e.g. played at a convention, or a friend's copy).
 
-#### 4.10.1 Game Chooser
+#### 4.10.1 Game Picker
 
 **Library selection:** My library or a friend's shared library (chip toggle).
 
@@ -494,7 +589,7 @@ dark-mode parity is built.
 | `WishlistEntry` | id, game (Game), priority (high/medium/low), notes, createdAt |
 | `VictoryStats` | totalSessions, totalWins, winRate, bestScore?, lastPlayedDate |
 | `Friend` | UserFriend (status: pending/accepted/blocked), SharedLibraryAccess (level: view/suggest), AppProfile (username, bio, avatar, gameCounts) |
-| `GameSuggestion` *(planned, §13.2)* | id, sender (AppProfile), recipient (AppProfile), game (Game), note?, status (pending/accepted/dismissed), createdAt |
+| `GameSuggestion` *(§13.2, done)* | id, senderId, recipientId, gameId, sender? (AppProfile), recipient? (AppProfile), game? (Game), note?, status (pending/accepted/dismissed), createdAt |
 | `GameSession` | id, userId, game (Game), sessionDate, durationMinutes?, playerCount, notes?, victories: SessionVictory[] — written by the Log Play sheet (§4.7); references `game_id` directly, independent of `LibraryEntry`/ownership. Read back today only as aggregated `VictoryStats`; §14.4 (planned) is the first surface to list raw sessions. |
 | `SessionVictory` | id, sessionId, playerName (free text, no account link), isWinner, score?, placement? |
 
@@ -532,7 +627,16 @@ dark-mode parity is built.
 ### 9a. App Store / TestFlight (iOS)
 
 From the pre-submission review (`flutter_app/APP_STORE_REVIEW.md`, 2026-06-12).
-These gate first submission and must be resolved before release:
+These gate first submission and must be resolved before release. Items 1–2
+are also tracked in the cross-platform
+[`docs/PRIVACY_RELEASE_CHECKLIST.md`](./PRIVACY_RELEASE_CHECKLIST.md), which
+has the actual outstanding actions behind them (the `profiles` RLS
+email-leak fix, a monitored privacy/support contact, and deploying the
+hosted `/privacy/` page that store listings must link to — a separately
+maintained copy of the same content as the in-app Privacy Policy screen,
+§4.1) — resolve that checklist's
+"Required before store submission" items alongside 1–2 here, not as a
+separate later pass.
 
 1. **Privacy Manifest** (`ios/Runner/PrivacyInfo.xcprivacy`) — *hard blocker*.
    Declare required-reason APIs (`shared_preferences` UserDefaults `CA92.1`; cache
@@ -549,8 +653,21 @@ These gate first submission and must be resolved before release:
    in-app branding, bundle ID, and Dart package to one real name.
 6. **iPad** — verify layouts on the largest reviewed device or restrict
    `TARGETED_DEVICE_FAMILY` to iPhone for v1.
+7. **App icon & App Store Connect listing assets** — *hard blocker*, not yet
+   produced/audited:
+   - 1024×1024 App Store icon (opaque, no alpha channel, no pre-rounded
+     corners — Apple applies the mask) plus the full iOS icon-set sizes
+     generated from it into `Assets.xcassets` (Flutter: `flutter_launcher_icons`
+     or manual Xcode asset catalog entries).
+   - App Store Connect screenshots for each required device size (6.9" and
+     6.5" iPhone at minimum, per current Apple requirements at submission
+     time); iPad screenshots too if §9a #6 keeps iPad enabled.
+   - Listing copy: app name, subtitle, promotional text, description,
+     keywords, support URL, marketing URL (optional), and the hosted privacy
+     policy URL (`docs/PRIVACY_RELEASE_CHECKLIST.md`, above).
+   - App preview video is optional, not required for v1.
 
-**Suggested order:** (1)+(2) → (3) → (4)+(5) → (6).
+**Suggested order:** (1)+(2) → (3) → (4)+(5) → (6) → (7).
 
 ### 9b. Google Play Beta (Android)
 
@@ -576,9 +693,21 @@ before first upload:
 6. **Permissions** — declare and justify camera (barcode scanner) and any
    other runtime permissions in the Play Console app content section.
 7. **Content rating questionnaire** and **privacy policy URL** — required to
-   publish even to a closed testing track.
-8. **Adaptive/launcher icon** — verify `android/app/src/main/res/mipmap-*`
-   assets exist and match the current app icon (not yet audited).
+   publish even to a closed testing track. Same hosted `/privacy/` URL as
+   §9a #7's App Store Connect listing; see the cross-platform
+   [`docs/PRIVACY_RELEASE_CHECKLIST.md`](./PRIVACY_RELEASE_CHECKLIST.md) for
+   the outstanding work behind it (RLS email-leak fix, monitored contact,
+   deploying the page) before it can be entered here.
+8. **App icon & Play Console listing assets** — *hard blocker*, not yet
+   produced/audited:
+   - Adaptive/launcher icon — verify `android/app/src/main/res/mipmap-*`
+     assets exist and match the current app icon.
+   - 512×512 Play Store listing icon (32-bit PNG, with alpha).
+   - 1024×500 feature graphic.
+   - Phone screenshots (minimum 2, per current Play requirements at upload
+     time); 7"/10" tablet screenshots only if a tablet layout pass happens.
+   - Listing copy: app title, short description, full description, category,
+     contact details.
 9. **Testers** — set up the internal or closed testing track and tester list
    in Play Console before inviting beta users.
 
@@ -638,24 +767,28 @@ requests, game detail, session logging, Game Nite tools (non-camera).
    step gain a friend's-library source too, so logging a play of a friend's
    copy doesn't require re-finding it on BGG?
 8. §13.2's suggestion "Accept" and §14.5's post-log bridge both need an
-   add-to-wishlist affordance — confirm they end up sharing one
-   implementation rather than diverging once both are built.
+   add-to-wishlist affordance. **Partially resolved:** §13.1 (Pull) and
+   §13.2 (Push Accept) both route through `WishlistNotifier.addGame` — one
+   implementation, confirmed for those two. Stays open until §14.5 is built
+   and confirmed to call the same path rather than a third implementation.
 
 ---
 
 ## 13. Planned Feature: Two-Way Friend Game Suggestions
 
-> **Status:** Pull (§13.1) is **built and shipped** — friend's-library
-> browsing, auto-granted access, and the Add to Wishlist action described
-> below all match the running app. Push (§13.2) is **not yet built**.
-> Originally specified here to close two gaps noted in
-> `PRD_FLUTTER_APP_CODEBASE.md` §7: wishlist entries couldn't be added from
-> mobile at all (now fixed by §13.1), and the `suggest` value on
-> `SharedLibraryAccess.accessLevel` is defined but unused (still true — see
-> §13.2's recommendation to deprecate it once Push ships). §7 of the
-> codebase doc still reflects pre-§13.1 code and is due for a sync pass once
-> Push closes out this section (tracked as Phase 5 in
-> `docs/IMPLEMENTATION_PLAN_FRIEND_FEATURES.md`).
+> **Status:** Both directions are **built and shipped** — Pull (§13.1) and
+> Push (§13.2) below both match the running app, across
+> `docs/IMPLEMENTATION_PLAN_FRIEND_FEATURES.md` Phases 0–4. **Not yet done:**
+> an actual device/simulator tap-through of Push's UI (friend picker, inbox
+> rows, badge) — Phase 4's data flow (send/accept/dismiss) was verified
+> directly against the live Supabase project, not the UI itself. Originally
+> specified here to close two gaps noted in `PRD_FLUTTER_APP_CODEBASE.md`
+> §7: wishlist entries couldn't be added from mobile at all (fixed by
+> §13.1), and the `suggest` value on `SharedLibraryAccess.accessLevel` was
+> defined but unused (now superseded by the `game_suggestions` table — see
+> §13.2's recommendation to deprecate it). §7 of the codebase doc still
+> reflects pre-§13 code and is due for a sync pass (tracked as Phase 5 in
+> `docs/IMPLEMENTATION_PLAN_FRIEND_FEATURES.md`, the only phase left).
 
 **Goal:** Close the loop between browsing a friend's collection and your own
 wishlist, in both directions:
@@ -700,13 +833,13 @@ is updated to match; treat this as amending that section, not §13.1 itself.
 
 **Gating.** Requires an accepted friendship *and* a `shared_library_access`
 row granting the current user at least `view` on that friend's library — the
-same table and access check the Game Chooser (§4.10.1) already reads via
+same table and access check the Game Picker (§4.10.1) already reads via
 `FriendsService.getSharedLibraryGames`. **Done** (see
 `docs/IMPLEMENTATION_PLAN_FRIEND_FEATURES.md` Phase 0): reciprocal `view`
 access is now auto-granted by a DB trigger on `user_friends` acceptance
 (covering both the normal accept-request update and a direct
 accepted-status insert), and auto-revoked on unfriend or block — so this
-feature and the existing Game Chooser friend-library toggle have data to
+feature and the existing Game Picker friend-library toggle have data to
 show with no manual sharing step. **A second gating layer was found and
 fixed during Phase 1 verification:** granting `shared_library_access` alone
 wasn't sufficient — `user_library`'s own RLS only ever allowed
@@ -742,39 +875,59 @@ existing Log Play Sheet's shape (§4.7). Confirming:
 
 ### 13.2 Push: Suggest a Game to a Friend
 
+> **Status: Done** (`docs/IMPLEMENTATION_PLAN_FRIEND_FEATURES.md` Phases 3–4).
+> The send/accept/dismiss data flow — including RLS (a non-friend sender is
+> rejected, only the recipient can act on a suggestion) and the Accept
+> wishlist-insert — is verified directly against the live "Board Game
+> Library" Supabase project. The UI itself hasn't had a device/simulator
+> tap-through yet. Details below are updated to match what's actually
+> running.
+
 **Entry points.** A new "Suggest to a Friend" action alongside existing
 actions on:
 - Game Detail Screen (§4.6) overflow menu.
 - My Library card overflow menu (§4.3).
 
-**Flow.** Tapping it opens a friend picker (reuses the Friends List UI
-pattern from §4.9 — avatar, username, game count; accepted friends only) →
-optional short note → Send. No priority field; priority is the *recipient's*
-call once accepted, not the sender's.
+**Flow.** Tapping it opens a bottom sheet (`SuggestToFriendSheet`, same
+shape as §13.1's Add to Wishlist sheet and the Log Play Sheet, §4.7):
+accepted friends listed via the shared `FriendRow` widget (avatar, username,
+game count — the same row component the Friends screen and Friend's Games
+tab use, not a separate reimplementation) with a tap-to-select checkmark →
+optional note field → "Send Suggestion," disabled until a friend is picked.
+No priority field; priority is the *recipient's* call once accepted, not the
+sender's. An empty-friends state points to Profile → Friends.
 
 **New surface — Suggestions inbox.** A new section, **"Suggested by
-Friends,"** on the Wishlist Tab (§4.8), above the regular wishlist list,
-showing pending incoming suggestions: sender's username/avatar, game cover
-and name, optional note, and two actions:
-- **Accept** — inserts a `user_wishlist` row for the recipient (their own
-  insert, satisfies existing RLS) and marks the suggestion `accepted`.
+Friends,"** on the Wishlist Tab (§4.8), above the regular wishlist list —
+rendered as part of the same scrollable list rather than a separate panel,
+so the tab's existing empty-state and search/filter logic both account for
+suggestions being present even when the wishlist itself is empty. Each row:
+sender's username, game cover and name, optional note, and two actions:
+- **Accept** — inserts a `user_wishlist` row for the recipient via
+  `WishlistNotifier.addGame` (§13.1's exact shared insert path — the
+  sender's note carries over into the wishlist entry's notes) and marks the
+  suggestion `accepted`.
 - **Dismiss** — marks the suggestion `dismissed`; no wishlist entry is
   created. Dismissing is silent — the sender is not notified of a decline.
 
 > §14.5 (planned) introduces mobile's other add-to-wishlist entry point (a
-> post-log "Add to Wishlist" bridge). Accept here should reuse that same
-> add-to-wishlist UI affordance rather than a second, divergent
-> implementation — see Open Question #8.
+> post-log "Add to Wishlist" bridge). It should call `WishlistNotifier
+> .addGame` too, the same path §13.1 and §13.2 both already share — Open
+> Question #8 is resolved for the two directions built so far, but stays
+> open until §14.5 actually lands and confirms it follows suit.
 
-A badge on the Wishlist tab (and/or a dashboard card, consistent with the
-existing Pending Requests pattern on the Friends tab) surfaces the pending
-count so suggestions aren't missed.
+**Badge.** No existing "pending count on a tab label" pattern was found to
+reuse — the Friends tab's Pending Requests is an in-content banner, not a
+tab badge, so this uses Flutter's built-in `Badge` widget on the "Wishlist"
+tab label instead, shown only when the count is above zero. A dashboard
+card was considered but not built (not required for a working v1).
 
 **Data model — new table, not a reuse of `suggest` access level.** Library
 *visibility* (`shared_library_access.access_level`) and a one-off *suggest
 this specific game* event are different concepts that the original schema
-conflated. Recommend a dedicated table instead of wiring up the dormant
-`suggest` enum value:
+conflated. Built as a dedicated table (`game_suggestions`, migration
+`20260818120000_create_game_suggestions.sql`) instead of wiring up the
+dormant `suggest` enum value:
 
 | Field | Notes |
 |-------|-------|
@@ -866,7 +1019,7 @@ the success snackbar.
 ### 14.4 Play History
 
 - **Profile entry** — a new row on the Profile menu (§4.1), alongside the
-  existing Wishlist/Friends/Shared Libraries/Settings rows, opening a full
+  existing Friends/Profile Details/Settings rows, opening a full
   history screen: every session via `SessionsService.getUserSessions`
   (already ownership-agnostic), grouped by game, newest first.
 - **Dashboard teaser** — a "Recent Plays" section on the Dashboard (§4.2)
@@ -887,9 +1040,11 @@ using the already-resolved `Game` row from §14.2 (`addGameToLibrary` /
 played a convention game they loved is in exactly the right headspace for
 this nudge.
 
-This makes §14 the first mobile entry point for adding to the wishlist,
-ahead of §13.2. See Open Question #8 — §13.2's "Accept" and this bridge
-should share one add-to-wishlist UI affordance rather than diverging.
+§13.1 (Pull) and §13.2 (Push Accept) shipped first and already established
+`WishlistNotifier.addGame` as the one add-to-wishlist insert path (§13's
+status banner) — this bridge should call that too, not
+`addGameToWishlist`/`addGameToLibrary` directly as originally written above,
+so all three entry points share the same code. See Open Question #8.
 
 ### 14.6 Out of Scope for v1
 
@@ -899,3 +1054,106 @@ should share one add-to-wishlist UI affordance rather than diverging.
 - No friend-library game picker (deferred to post-§13.1).
 - No schema or RLS changes — confirmed unnecessary; the data layer already
   supports this.
+
+---
+
+## 15. Planned Feature: Ad Placement
+
+> **Status:** Not yet built — this is a placement/layout spec, not an
+> implementation; no ad SDK is integrated yet. Full detailed spec (exact file
+> paths, line numbers, and rationale) lives at
+> [`flutter_app/docs/AD_PLACEMENT_RECOMMENDATION.md`](../flutter_app/docs/AD_PLACEMENT_RECOMMENDATION.md)
+> — this section summarizes it for PRD tracking; treat the linked doc as
+> source of truth if the two ever drift.
+
+**Goal:** Introduce contextual native ads (game companies, events, publishers,
+etc.) on Dashboard (§4.2), Game Nite + its tools menu (§4.10), My Library, and
+Wishlist (§4.3/§4.8) without degrading the experience or reading as injected/
+foreign content. Mobile-only for now — not present in the web PRD.
+
+### 15.1 Principles
+
+- **In-flow, never anchored.** No sticky top/bottom ad bars anywhere — every
+  slot is a regular scrollable item that scrolls with its list/grid like any
+  other row or card.
+- **Native, not a banner.** Ad slots match the surrounding card/row family
+  (corner radius, padding, type scale, `AppColors` tokens) so they read as
+  "one more card," not a foreign unit.
+- **Sparse by default.** See cadence rules (§15.4). Short/non-scrolling
+  screens get at most one slot for the whole screen; nothing shown when
+  content is too sparse to support it.
+- **Never adjacent to interactive/destructive controls.** No slot sits next
+  to a tappable tool row, a delete/swipe action, or any control where an
+  accidental tap could be mistaken for part of the ad.
+- **Clearly labeled.** Every slot carries a small "Sponsored"/"Ad" tag —
+  required by App Store Review Guideline 3.2.2, Google Play's ads policy, and
+  the disclosure terms of every major ad network.
+- **Ad-network-agnostic.** Placement and rendering are decoupled from any
+  specific SDK, so swapping/mediating networks later doesn't touch any
+  screen's layout code.
+
+### 15.2 The adapter seam: `NativeAdContent`
+
+A single data model absorbs the asset overlap across native-ad SDKs (AdMob
+`NativeAd`, Meta Audience Network `NativeAdView`, Mintegral, etc.):
+`headline`, `body?`, `iconAsset?` (small square icon/logo), `mediaAsset?`
+(larger hero image, optional), `ctaLabel`, `advertiserName?`,
+`sponsoredLabel` (defaults to "Sponsored"). Whichever SDK is chosen later,
+its adapter's only job is to populate this object — the rendering widget
+never needs to know which network filled it.
+
+### 15.3 Component shape
+
+- **`AdSlot` widget** (`lib/core/ads/ad_slot.dart`), parameterized by an
+  `AdSlotFormat`:
+  - `listRow` — mirrors the list-row card family already used by
+    `GameCard`'s `_ListCard` and Wishlist's `_WishlistItemRow`: 72×72
+    leading image/icon, headline + body text, small CTA button; matches
+    their row height/spacing.
+  - `gridRow` — a full-width row spanning all grid columns (a single grid
+    *cell* is too narrow for native ad copy at the library grid's current
+    `childAspectRatio: 0.55`).
+  - `sectionCard` — mirrors Dashboard's `_SectionHeader` spacing/card
+    padding for single-slot placements on non-list screens.
+  - All formats show the `sponsoredLabel` in a small tag using existing
+    `AppColors` neutrals (e.g. `parchment200`/`ink200`) so it sits inside the
+    app's own theme rather than looking like an imported ad unit.
+- **`ad_placement.dart`** — shared cadence helpers so insertion logic isn't
+  duplicated per screen: `shouldInsertAdAfterListIndex(int index, {required
+  int itemCount})` and `gridAdRowIndices(int itemCount, {required int
+  crossAxisCount})` (returns which grid row numbers should be ad rows).
+
+### 15.4 Cadence rules
+
+| Context | Rule |
+|---|---|
+| List rows (Library list, Wishlist) | 1 ad after every **8 real items**; never before the first 6 items; none below 6 items total. |
+| Grid tiles (Library grid) | 1 full-width ad row after every **3 grid rows** (every 9 tiles at the current 3-column layout); same minimum-item guard. |
+| Short/non-scrolling screens (Dashboard, Game Nite menu) | Exactly **one** ad slot for the whole screen; never inserted between two functional/interactive rows. |
+
+Intentionally conservative — favors trust and retention over ad density. Can
+tighten later against real engagement/revenue data without changing the
+underlying component.
+
+### 15.5 Per-screen placement
+
+| Screen | Layout | Ad format | Placement |
+|---|---|---|---|
+| Dashboard (§4.2) | Sectioned `ListView` | `sectionCard` | One slot inserted between Collection Statistics and Recently Added, same `SizedBox(height: 24)` section gap — reads as a 5th section, sits mid-scroll rather than first (unmissed) or last (may never be scrolled to). |
+| Game Nite menu (§4.10) | 5-row `ListView` (`_ToolRow` + divider) | `listRow` | One slot appended **after** the Dice Roller row, same divider style, clearly labeled "Sponsored" so it's unambiguous it isn't a 6th tool. Five tappable rows is too short/interactive to interleave between any two. |
+| My Library — list (§4.3) | `ListView.separated` | `listRow` | Routed through `shouldInsertAdAfterListIndex`, inserted in place of a `GameCard` at computed positions. |
+| My Library — grid (§4.3) | `GridView` (3 cols, `childAspectRatio: 0.55`) | `gridRow` | Requires converting to `CustomScrollView`/`SliverMainAxisGroup` alternating `SliverGrid` chunks (same delegate/spacing as today) with `SliverToBoxAdapter(AdSlot)` breaks, sized via `gridAdRowIndices`; preserves existing `RefreshIndicator`/padding. |
+| Wishlist (§4.8) | `ListView.separated` (`_WishlistItemRow`) | `listRow` | Same index-based insertion as Library list. Matters doubly here since each row carries a `PopupMenuButton` (edit/delete) — index-based (not scroll-position-based) insertion naturally avoids landing an ad adjacent to a row a user is mid-interaction with. |
+
+**Future extension (out of scope for this pass):** individual Game Nite tool
+result/output screens (e.g. after Game Chooser reveals a pick, or First
+Player reveals a winner) are natural contextual pause points — would pair
+well with contextual ads (related games, local game-night events). Worth a
+follow-up placement recommendation once those flows are prioritized.
+
+### 15.6 Out of Scope for v1
+
+- No ad network/SDK selection or integration — this is placement/layout only.
+- No mediation logic between networks.
+- No frequency-capping or revenue-optimization tuning beyond the cadence
+  rules above.
