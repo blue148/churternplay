@@ -5,7 +5,7 @@ class PrivacySection {
   final List<String> paragraphs;
 }
 
-const privacyPolicyEffectiveDate = 'August 18, 2026';
+const privacyPolicyEffectiveDate = 'September 22, 2026';
 
 const privacyPolicyIntroduction =
     'This Privacy Policy explains how Churtern Play ("Churtern Play," "we," '
@@ -39,14 +39,17 @@ const privacyPolicySections = <PrivacySection>[
       'Camera data. Camera access is used to recognize a game barcode. Camera '
           'images are processed on your device and are not stored by Churtern '
           'Play. The recognized barcode is sent to our service for lookup.',
-      'Usage, device, and diagnostic information. Some builds may collect app '
-          'interactions (such as screens viewed, buttons used, searches, scans, '
-          'and feature usage), ad views and interactions, app version, device and '
-          'operating-system type, language, time zone, IP address, approximate '
-          'location derived from IP address, advertising or app-instance '
-          'identifiers, crash reports, and performance logs. We use this '
-          'information to operate the App, understand usage, fix problems, and '
-          'plan improvements.',
+      'Usage and diagnostic information. During the beta, we log certain app '
+          'actions (such as signing in, signing up, and deleting an account), '
+          'your account ID, general device platform, and crash reports directly '
+          'to our own systems — not to a third-party analytics or advertising '
+          'SDK. We use this information only to understand usage and diagnose '
+          'problems during the beta. Some future builds may also collect ad '
+          'views and interactions, app version, operating-system type, '
+          'language, time zone, IP address, approximate location derived from '
+          'IP address, and advertising or app-instance identifiers; we will '
+          'update this Policy and applicable app-store disclosures before that '
+          'begins.',
     ],
   ),
   PrivacySection(

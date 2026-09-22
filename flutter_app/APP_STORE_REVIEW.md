@@ -29,6 +29,18 @@ Updated 2026-09-22.
 >   (`auth_screen.dart` wordmark, `beta_disclaimer_dialog.dart` copy) to match.
 > - Privacy policy is now shown in-app (`PrivacyPolicyScreen` + beta disclaimer
 >   dialog) rather than an external placeholder link.
+> - First-party beta analytics — added `analytics_events` table (migration
+>   `20260922130000`, applied to the live project), `AnalyticsService`
+>   (`lib/data/services/analytics_service.dart`), a global Flutter/platform
+>   error hook in `main.dart` logging `app_error`, and `sign_in`/`sign_up`/
+>   `sign_out`/`account_deleted` events in `AuthService`. No third-party SDK,
+>   no ATT/tracking required. Privacy policy §1 and `PrivacyInfo.xcprivacy`
+>   updated to match (User ID, Product Interaction, Crash Data added); both
+>   copies of the policy re-dated to September 22, 2026.
+> - Phone number field (added by separate work, migration `20260922120000`) —
+>   optional secondary contact identifier, not used for authentication.
+>   Declared in `PrivacyInfo.xcprivacy` and covered by the policy's existing
+>   phone-number language.
 
 ---
 
@@ -55,18 +67,35 @@ into the Runner target's Resources build phase. Verified present in a built
 ## 2. App Privacy questionnaire (App Store Connect) — HARD BLOCKER
 
 Separate from the manifest: the App Store Connect "App Privacy" section must be
-filled out before the app can be released.
+filled out before the app can be released. Updated 2026-09-22 after Jason had
+manually selected 10 data types (including Advertising Data, Device ID, and
+"Used for tracking purposes" on Name and Advertising Data) that did not match
+what the app actually does — no ad/analytics SDK exists, and checking
+"tracking" requires implementing Apple's App Tracking Transparency (ATT)
+framework, which this app does not have.
 
-**Plan:** In App Store Connect → App Privacy, declare collection of:
-- **Contact Info → Email Address** (account creation) — linked to user, app
-  functionality.
-- **User Content** (library, wishlist, sessions, profile) — linked to user, app
-  functionality.
-- **Not used for tracking.**
+**Correct declaration for this build** (matches `PrivacyInfo.xcprivacy` and the
+first-party `analytics_events` logging added this session — see
+`lib/data/services/analytics_service.dart`):
 
-Keep this consistent with the `PrivacyInfo.xcprivacy` from item 1.
+| Data type | Purposes | Linked to identity | Tracking |
+|---|---|---|---|
+| Name | App Functionality | Yes | **No** |
+| Email Address | App Functionality | Yes | **No** |
+| Phone Number | App Functionality | Yes | **No** |
+| User ID | App Functionality, Analytics | Yes | **No** |
+| Product Interaction | Analytics | Yes | **No** |
+| Crash Data | App Functionality | Yes | **No** |
+| User Content (library, wishlist, sessions, profile) | App Functionality | Yes | **No** |
 
-**Acceptance:** Privacy section shows "complete" in App Store Connect.
+**Do not select:** Search History, Device ID, Advertising Data, Performance
+Data, Third-Party Advertising, Developer's Advertising or Marketing, or check
+"Used for tracking purposes" on anything — none of these are true for this
+build. If ads/analytics SDKs are added later, update this table, the manifest,
+and the privacy policy (§5) together before that release.
+
+**Acceptance:** Privacy section shows "complete" in App Store Connect and
+matches this table.
 
 ---
 

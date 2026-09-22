@@ -1,5 +1,6 @@
 import '../../core/supabase_client.dart';
 import '../models/profile.dart';
+import 'analytics_service.dart';
 
 abstract class AuthService {
   static Future<void> signIn({
@@ -7,21 +8,28 @@ abstract class AuthService {
     required String password,
   }) async {
     await supabase.auth.signInWithPassword(email: email, password: password);
+    AnalyticsService.logEvent('sign_in');
   }
 
   static Future<void> signUp({
     required String email,
     required String password,
     required String username,
+    String? phone,
   }) async {
     await supabase.auth.signUp(
       email: email,
       password: password,
-      data: {'username': username},
+      data: {
+        'username': username,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      },
     );
+    AnalyticsService.logEvent('sign_up');
   }
 
   static Future<void> signOut() async {
+    AnalyticsService.logEvent('sign_out');
     await supabase.auth.signOut();
   }
 
@@ -29,6 +37,7 @@ abstract class AuthService {
   /// via the `delete-account` edge function, then clears the local session
   /// (which triggers the router redirect back to the auth screen).
   static Future<void> deleteAccount() async {
+    AnalyticsService.logEvent('account_deleted');
     final response = await supabase.functions.invoke('delete-account');
     if (response.status != 200) {
       throw Exception('Failed to delete account. Please try again.');
