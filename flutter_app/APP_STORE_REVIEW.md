@@ -102,11 +102,22 @@ iPad can be revisited as a later release.
 
 ---
 
+## 7. App Store category
+
+**Decision:** Primary **Utilities**, Secondary **Entertainment**. Utilities fits
+the core collection/inventory-management function; Entertainment captures the
+board-game hobby angle for discoverability. Set both in App Store Connect →
+App Information → Category.
+
+---
+
 ## Remaining before submission (all manual, App Store Connect / Xcode side)
 1. Enter `https://churternplay.netlify.app/privacy/` as the Privacy Policy URL
    in App Store Connect (App Information) and Play Console (App content).
 2. **#2 App Privacy questionnaire** — fill out App Store Connect's App Privacy
    section (Email Address + User Content, linked to user, app functionality only,
    not used for tracking) to match `PrivacyInfo.xcprivacy`.
-3. Archive a release build in Xcode (or `flutter build ipa`) with real signing
+3. Set App Information → Category to Utilities (primary) / Entertainment
+   (secondary) — see #7.
+4. Archive a release build in Xcode (or `flutter build ipa`) with real signing
    and upload to App Store Connect / TestFlight.
