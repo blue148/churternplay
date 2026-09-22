@@ -100,7 +100,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'The Catalogue',
+                        'Churntern Play',
                         style: GoogleFonts.literata(
                           fontSize: 32,
                           fontWeight: FontWeight.w300,

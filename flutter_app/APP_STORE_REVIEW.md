@@ -2,11 +2,30 @@
 
 Tracking the issues that will cause an Apple App Store rejection, with a plan to
 fix each. Ordered by severity. Created from a pre-submission review on 2026-06-12.
+Updated 2026-09-22.
 
-> **Already done:** In-app account deletion (Guideline 5.1.1(v)) — implemented via
-> the `delete-account` edge function + confirm drawer in the profile screen.
-> Remaining deploy step: set `SUPABASE_SERVICE_ROLE_KEY` secret and
-> `supabase functions deploy delete-account`.
+> **Already done:**
+> - In-app account deletion (Guideline 5.1.1(v)) — implemented via
+>   the `delete-account` edge function + confirm drawer in the profile screen.
+>   Remaining deploy step: set `SUPABASE_SERVICE_ROLE_KEY` secret and
+>   `supabase functions deploy delete-account`.
+> - Dead/placeholder UI (#3) — profile menu items (Friends, Profile Details,
+>   Settings, Privacy Policy) and the scanner's "Add Manually" button are all
+>   wired to real destinations.
+> - Privacy Manifest (#1) — `ios/Runner/PrivacyInfo.xcprivacy` created and added
+>   to the Runner target's Resources build phase; verified present in a built
+>   `Runner.app` (`flutter build ios --no-codesign`).
+> - Export compliance key (#4) — `ITSAppUsesNonExemptEncryption` = `false` added
+>   to `Info.plist`.
+> - iPad (#6) — restricted to iPhone-only for v1: `TARGETED_DEVICE_FAMILY` set to
+>   `1` in `project.pbxproj`, and the now-unused
+>   `UISupportedInterfaceOrientations~ipad` key removed from `Info.plist`.
+> - App identity (#5) — DONE. Real reverse-DNS bundle ID:
+>   `com.churternplay.churternPlay`. "Churntern Play" confirmed as the single
+>   product name; fixed the two remaining "The Catalogue" strings
+>   (`auth_screen.dart` wordmark, `beta_disclaimer_dialog.dart` copy) to match.
+> - Privacy policy is now shown in-app (`PrivacyPolicyScreen` + beta disclaimer
+>   dialog) rather than an external placeholder link.
 
 ---
 
@@ -40,31 +59,12 @@ disclaimer links to the real URL.
 
 ---
 
-## 1. Missing Privacy Manifest — Guideline 5.1.2 — HARD BLOCKER
+## 1. Missing Privacy Manifest — Guideline 5.1.2 — DONE
 
-There is no `PrivacyInfo.xcprivacy` in the iOS app target. Apple has required this
-since May 2024 and the build will be rejected at upload/review without it.
-
-**Why it applies here:** several dependencies use "required-reason" APIs, and the
-app collects user data (email, account content):
-- `shared_preferences` → `NSPrivacyAccessedAPICategoryUserDefaults` (reason `CA92.1`)
-- `supabase_flutter` / `cached_network_image` → file-timestamp & disk-space reasons
-  (`C617.1`, `E174.1`, `85F4.1`) for their on-disk caches
-
-**Plan:**
-1. Create `ios/Runner/PrivacyInfo.xcprivacy` (a plist) declaring:
-   - `NSPrivacyAccessedAPITypes` — UserDefaults (`CA92.1`) plus the file-timestamp
-     and disk-space categories the caching libs use.
-   - `NSPrivacyCollectedDataTypes` — email address and user content (linked to
-     identity, used for app functionality, not tracking).
-   - `NSPrivacyTracking` = `false`; empty `NSPrivacyTrackingDomains`.
-2. Add the file to the Runner target in Xcode (`project.pbxproj`) so it ships in
-   the bundle — creating the file alone is not enough.
-3. Verify many plugins already ship their own manifest; Xcode aggregates them. Our
-   job is the **app target's** manifest + anything not covered by a plugin.
-
-**Acceptance:** `Runner.app/PrivacyInfo.xcprivacy` present in an archive build; no
-ITMS privacy-manifest warnings on upload.
+`ios/Runner/PrivacyInfo.xcprivacy` created (UserDefaults/file-timestamp/disk-space
+required-reason APIs + email/user-content collection, tracking = false) and wired
+into the Runner target's Resources build phase. Verified present in a built
+`Runner.app` via `flutter build ios --no-codesign`.
 
 ---
 
@@ -86,83 +86,46 @@ Keep this consistent with the `PrivacyInfo.xcprivacy` from item 1.
 
 ---
 
-## 3. Dead / placeholder UI — Guideline 2.1 (App Completeness) — LIKELY BLOCKER
+## 3. Dead / placeholder UI — Guideline 2.1 (App Completeness) — DONE
 
-Reviewers tap every control; non-functional buttons read as an unfinished app.
-
-Current offenders:
-- `lib/features/profile/profile_screen.dart` — **Wishlist**, **Friends**,
-  **Shared Libraries**, **Settings** menu items all have `onTap: () {}` (`// TODO`).
-- `lib/features/scanner/scanner_screen.dart` — the "Game not found" sheet's
-  **Add Manually** button is `// TODO: navigate to manual entry` (just closes).
-
-**Plan (choose per item):**
-- Wire up the destinations that already exist (wishlist/friends data + screens
-  appear to exist in the backend), **or**
-- Hide the not-yet-built entries for the first submission so nothing dead is
-  visible. Lowest-risk path to approval: hide what isn't wired, ship a smaller
-  but complete surface.
-- For **Add Manually**: either implement the manual-entry flow (see
-  `docs/manual-entry-flow.md`) or replace the button with a "Scan Again" / dismiss
-  so there's no dead end.
-
-**Acceptance:** Every visible, enabled control does something.
+Profile menu items (Friends, Profile Details, Settings, Privacy Policy) and the
+scanner's "Add Manually" button (→ `/library/manual-add`, carrying the unmatched
+barcode) are all wired to real destinations. No dead controls found.
 
 ---
 
-## 4. Export compliance key — friction (not auto-reject)
+## 4. Export compliance key — friction (not auto-reject) — DONE
 
-`Info.plist` lacks `ITSAppUsesNonExemptEncryption`. Without it, every build prompts
-the export-compliance question in App Store Connect.
-
-**Plan:** App only uses standard HTTPS (Supabase), so add to
-`ios/Runner/Info.plist`:
-```xml
-<key>ITSAppUsesNonExemptEncryption</key>
-<false/>
-```
-
-**Acceptance:** No export-compliance prompt on build submission.
+Added `ITSAppUsesNonExemptEncryption` = `false` to `ios/Runner/Info.plist` (app
+only uses standard HTTPS via Supabase).
 
 ---
 
-## 5. Placeholder app identity — Guideline 2.3 (metadata) — possible query
+## 5. Placeholder app identity — Guideline 2.3 (metadata) — DONE
 
-Inconsistent naming may draw a metadata rejection / clarification:
-- Display name: **"Churntern Play"** (`CFBundleDisplayName`)
-- In-app branding: **"The Catalogue"** (auth screen)
-- Package: `churntern_play`; pubspec `name: churntern_play`
-- Bundle ID still the unset `$(PRODUCT_BUNDLE_IDENTIFIER)` template
-
-**Plan:**
-1. Decide the real product name and make `CFBundleDisplayName`, the App Store
-   listing name, and in-app branding agree.
-2. Set a real reverse-DNS bundle identifier in Xcode (e.g. `com.<org>.<app>`).
-3. (Optional, cosmetic) rename the Dart package away from `churntern_play`.
-
-**Acceptance:** Store name, on-device name, and in-app branding match; real bundle
-ID configured.
+"Churntern Play" confirmed as the single product name. Real reverse-DNS bundle ID
+set (`com.churternplay.churternPlay`). Fixed the two lingering "The Catalogue"
+strings in `auth_screen.dart` (wordmark) and `beta_disclaimer_dialog.dart` (copy)
+so in-app branding, display name, and bundle ID all agree.
 
 ---
 
-## 6. iPad support — verify, don't assume — possible 2.x
+## 6. iPad support — possible 2.x — DONE (restricted to iPhone-only for v1)
 
-`Info.plist` declares iPad orientations and sets no `UIDeviceFamily` restriction,
-so **Apple will review on iPad too.** Broken iPad layout = rejection.
-
-**Plan:** Either
-- Test dashboard / library / game-nite / scanner on an iPad simulator and fix any
-  stretched/broken layouts, **or**
-- Restrict to iPhone-only (set the Devices/`TARGETED_DEVICE_FAMILY` to iPhone) if
-  iPad isn't a target for v1.
-
-**Acceptance:** App looks correct on the largest reviewed device, or iPad is
-explicitly out of scope.
+`TARGETED_DEVICE_FAMILY` set to `1` (iPhone only) in `project.pbxproj`; the
+now-unused `UISupportedInterfaceOrientations~ipad` key removed from `Info.plist`.
+iPad can be revisited as a later release.
 
 ---
 
-## Suggested order
-1. Privacy Manifest (#1) + App Privacy answers (#2) — the two that bounce apps most.
-2. Dead UI cleanup (#3).
-3. Export key (#4) + identity (#5) — quick.
-4. iPad decision (#6).
+## Remaining before submission
+1. **#0 Hosted Privacy Policy URL** — confirm `public/privacy/index.html` is
+   actually deployed and live at a real URL (not just present in the repo), then
+   set it in App Store Connect (App Information) and Play Console (App content).
+2. **#2 App Privacy questionnaire** — fill out App Store Connect's App Privacy
+   section (Email Address + User Content, linked to user, app functionality only,
+   not used for tracking) to match `PrivacyInfo.xcprivacy`.
+3. Deploy `delete-account`: set `SUPABASE_SERVICE_ROLE_KEY` secret and run
+   `supabase functions deploy delete-account` against the linked project.
+4. Archive a release build in Xcode (or `flutter build ipa`) with real signing
+   and upload to App Store Connect / TestFlight.
