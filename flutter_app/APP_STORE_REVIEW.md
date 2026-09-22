@@ -7,8 +7,11 @@ Updated 2026-09-22.
 > **Already done:**
 > - In-app account deletion (Guideline 5.1.1(v)) — implemented via
 >   the `delete-account` edge function + confirm drawer in the profile screen.
->   Remaining deploy step: set `SUPABASE_SERVICE_ROLE_KEY` secret and
->   `supabase functions deploy delete-account`.
+>   Deployed and ACTIVE (v1) on the `oorilcytrytxhffindgy` project;
+>   `SUPABASE_SERVICE_ROLE_KEY` secret was already set.
+> - Hosted Privacy Policy URL (#0) — confirmed live at
+>   `https://churternplay.netlify.app/privacy/` (HTTP 200). Ready to enter in
+>   App Store Connect and Play Console.
 > - Dead/placeholder UI (#3) — profile menu items (Friends, Profile Details,
 >   Settings, Privacy Policy) and the scanner's "Add Manually" button are all
 >   wired to real destinations.
@@ -29,33 +32,14 @@ Updated 2026-09-22.
 
 ---
 
-## 0. Missing hosted Privacy Policy URL — HARD BLOCKER (both stores)
+## 0. Missing hosted Privacy Policy URL — DONE (page live; consoles still need it entered)
 
-Neither store submission can proceed without a live Privacy Policy URL — App
-Store Connect requires it for every TestFlight build (internal or external
-testing), and Play Console requires it before testers can be added to a closed
-testing track. Invite-only does not exempt this.
-
-**Why it matters here specifically:** the app has a friends/library-sharing
-feature, so testers' library and profile data becomes visible to other testers
-they connect with — that needs explicit disclosure, plus standard coverage of
-what's collected (email, library/wishlist/session/profile content — see #2
-below), that beta data may be reset/wiped without notice, and how to request
-deletion (already built: `delete-account` edge function).
-
-An in-app "Beta Preview" disclaimer now shows on every auth-screen launch
-(`lib/features/auth/widgets/beta_disclaimer_dialog.dart`) referencing this
-policy via `kPrivacyPolicyUrl`, currently a `TODO_PRIVACY_URL` placeholder.
-
-**Plan:** Host a real privacy policy page (e.g. on the Netlify-deployed
-marketing site) covering the beta-specific points above, then:
-1. Replace `kPrivacyPolicyUrl` in `beta_disclaimer_dialog.dart` with the real
-   URL (and consider re-adding `url_launcher` to make it tappable).
-2. Add the URL to App Store Connect (App Information → Privacy Policy URL)
-   and Play Console (App content → Privacy policy).
-
-**Acceptance:** Privacy Policy URL live and set in both consoles; in-app
-disclaimer links to the real URL.
+`https://churternplay.netlify.app/privacy/` returns HTTP 200 and covers data
+collected, beta disclosures, and account deletion. The in-app disclaimer links
+to the in-app `PrivacyPolicyScreen` rather than this URL directly, which is
+fine — but the URL still needs to be entered manually in App Store Connect
+(App Information → Privacy Policy URL) and Play Console (App content →
+Privacy policy); the CLI/API can't set that field.
 
 ---
 
@@ -118,14 +102,11 @@ iPad can be revisited as a later release.
 
 ---
 
-## Remaining before submission
-1. **#0 Hosted Privacy Policy URL** — confirm `public/privacy/index.html` is
-   actually deployed and live at a real URL (not just present in the repo), then
-   set it in App Store Connect (App Information) and Play Console (App content).
+## Remaining before submission (all manual, App Store Connect / Xcode side)
+1. Enter `https://churternplay.netlify.app/privacy/` as the Privacy Policy URL
+   in App Store Connect (App Information) and Play Console (App content).
 2. **#2 App Privacy questionnaire** — fill out App Store Connect's App Privacy
    section (Email Address + User Content, linked to user, app functionality only,
    not used for tracking) to match `PrivacyInfo.xcprivacy`.
-3. Deploy `delete-account`: set `SUPABASE_SERVICE_ROLE_KEY` secret and run
-   `supabase functions deploy delete-account` against the linked project.
-4. Archive a release build in Xcode (or `flutter build ipa`) with real signing
+3. Archive a release build in Xcode (or `flutter build ipa`) with real signing
    and upload to App Store Connect / TestFlight.
