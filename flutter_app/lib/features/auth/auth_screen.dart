@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_service.dart';
+import 'forgot_password_screen.dart';
 import 'widgets/beta_disclaimer_dialog.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -16,8 +18,10 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
+  final _loginIdCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _usernameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
 
   bool _isSignUp = false;
   bool _loading = false;
@@ -34,8 +38,10 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   void dispose() {
     _emailCtrl.dispose();
+    _loginIdCtrl.dispose();
     _passwordCtrl.dispose();
     _usernameCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -52,10 +58,11 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
           username: _usernameCtrl.text.trim(),
+          phone: _phoneCtrl.text.trim(),
         );
       } else {
         await AuthService.signIn(
-          email: _emailCtrl.text.trim(),
+          identifier: _loginIdCtrl.text.trim(),
           password: _passwordCtrl.text,
         );
       }
@@ -131,15 +138,31 @@ class _AuthScreenState extends State<AuthScreen> {
                               v == null || v.isEmpty ? 'Required' : null,
                         ),
                         const SizedBox(height: 16),
+                        _field(
+                          controller: _phoneCtrl,
+                          label: 'PHONE (OPTIONAL)',
+                          autofill: AutofillHints.telephoneNumber,
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 16),
                       ],
-                      _field(
-                        controller: _emailCtrl,
-                        label: 'EMAIL',
-                        autofill: AutofillHints.email,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) =>
-                            v == null || !v.contains('@') ? 'Valid email required' : null,
-                      ),
+                      if (_isSignUp)
+                        _field(
+                          controller: _emailCtrl,
+                          label: 'EMAIL',
+                          autofill: AutofillHints.email,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) =>
+                              v == null || !v.contains('@') ? 'Valid email required' : null,
+                        )
+                      else
+                        _field(
+                          controller: _loginIdCtrl,
+                          label: 'EMAIL OR PHONE',
+                          autofill: AutofillHints.username,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Required' : null,
+                        ),
                       const SizedBox(height: 16),
                       _field(
                         controller: _passwordCtrl,
@@ -152,6 +175,28 @@ class _AuthScreenState extends State<AuthScreen> {
                             ? 'Min 6 characters'
                             : null,
                       ),
+                      if (!_isSignUp) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () =>
+                                context.push(ForgotPasswordScreen.routePath),
+                            child: Text(
+                              'Forgot password?',
+                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                                fontSize: 12,
+                                color: AppColors.ink300,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
 
                       // ── Error ─────────────────────────────────────────────
                       if (_error != null) ...[

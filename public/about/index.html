@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="About Churtern Play — a board game collection manager built for hobbyists and game nights." />
+    <title>About — Churtern Play</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #fdf8f0;
+        --card: #fffdf9;
+        --ink: #352e22;
+        --muted: #6b604f;
+        --clay: #8f3e14;
+        --rule: #e7d8bb;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+
+      main {
+        width: min(820px, calc(100% - 32px));
+        margin: 40px auto;
+        padding: clamp(28px, 6vw, 64px);
+        background: var(--card);
+        border: 1px solid var(--rule);
+        box-shadow: 0 14px 40px rgba(53, 46, 34, 0.08);
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--clay);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1, h2 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      h1 { margin: 8px 0 4px; font-size: clamp(2.25rem, 7vw, 3.6rem); }
+      h2 { margin: 2.2rem 0 0.6rem; font-size: 1.5rem; }
+      p { margin: 0 0 1rem; }
+      .intro { margin-top: 2rem; font-size: 1.05rem; }
+
+      a { color: var(--clay); }
+      a:focus-visible { outline: 3px solid #e2b83a; outline-offset: 3px; }
+
+      ul { padding-left: 1.2rem; }
+      li { margin-bottom: 0.4rem; }
+
+      .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.9rem; }
+
+      footer {
+        margin-top: 2.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      footer a { color: var(--muted); }
+      footer a:hover { color: var(--clay); }
+
+      @media (max-width: 560px) {
+        main { width: 100%; margin: 0; border: 0; box-shadow: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back-link" href="/">← Back to Churtern Play</a>
+      <header>
+        <p class="eyebrow">About</p>
+        <h1>Churtern Play</h1>
+      </header>
+
+      <p class="intro">
+        Churtern Play is a board game collection manager built for hobbyists who
+        own physical games and play them socially. It exists because keeping
+        track of a real shelf of games — what you own, what's on your wishlist,
+        who won last time — is a problem software is genuinely good at solving.
+      </p>
+
+      <section>
+        <h2>What it's for</h2>
+        <p>
+          Scan a barcode or search by title to add a game and pull in its cover
+          art, player count, playtime, and more. Keep a wishlist alongside your
+          collection. When it's game night, use the built-in tools to pick a
+          game, pick who goes first, and time turns or the whole session. Log
+          who played and who won, and let those sessions build into stats over
+          time.
+        </p>
+        <p>
+          Connect with friends to browse each other's collections and get
+          suggestions for what to bring over.
+        </p>
+      </section>
+
+      <section>
+        <h2>Where it's headed</h2>
+        <p>
+          Churtern Play started as a web app and is currently in beta on iOS and
+          Android. The web app, iOS app, and Android app share one backend and
+          one collection, so your library stays in sync wherever you play.
+        </p>
+      </section>
+
+      <section>
+        <h2>Get in touch</h2>
+        <p>
+          Questions, feedback, or a bug to report? Reach out through the
+          developer contact listed on the Churtern Play App Store or Google
+          Play listing once the apps are live, or use the contact details
+          provided wherever you signed up.
+        </p>
+      </section>
+
+      <footer>
+        Churtern Play ·
+        <a href="/">Home</a> ·
+        <a href="/privacy/">Privacy</a> ·
+        <a href="/app/">Sign In</a>
+      </footer>
+    </main>
+  </body>
+</html>

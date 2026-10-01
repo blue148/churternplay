@@ -35,6 +35,7 @@ class AppProfile {
   final String username;
   final String? avatarUrl;
   final String? bio;
+  final String? phone;
   final ProfilePreferences preferences;
   final int totalGames;
   final int favoriteCount;
@@ -48,6 +49,7 @@ class AppProfile {
     required this.username,
     this.avatarUrl,
     this.bio,
+    this.phone,
     required this.preferences,
     required this.totalGames,
     required this.favoriteCount,
@@ -62,6 +64,7 @@ class AppProfile {
         username: json['username'] as String,
         avatarUrl: json['avatar_url'] as String?,
         bio: json['bio'] as String?,
+        phone: json['phone'] as String?,
         preferences: ProfilePreferences.fromJson(
             json['preferences'] as Map<String, dynamic>?),
         totalGames: json['total_games'] as int? ?? 0,

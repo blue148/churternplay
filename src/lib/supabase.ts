@@ -97,6 +97,7 @@ export interface Profile {
   username: string;
   avatar_url?: string;
   bio?: string;
+  phone?: string;
   preferences: {
     theme: 'light' | 'dark';
     notifications_enabled: boolean;

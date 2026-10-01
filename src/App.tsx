@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthForm from './components/AuthForm';
+import ResetPasswordScreen from './components/ResetPasswordScreen';
 import Library from './components/Library';
 import AdminPanel from './components/AdminPanel';
 import GameNiteTools from './components/GameNiteTools';
@@ -20,7 +21,7 @@ const MeepleIcon = ({ className }: { className?: string }) => (
 const bottomNavColor = '#b85c28';
 
 function AppContent() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, passwordRecovery, clearPasswordRecovery } = useAuth();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'library' | 'gameNiteTools' | 'admin' | 'profile'>('dashboard');
   const [selectedTool, setSelectedTool] = useState<Tool | undefined>(undefined);
   const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false);
@@ -31,6 +32,10 @@ function AppContent() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
       </div>
     );
+  }
+
+  if (passwordRecovery) {
+    return <ResetPasswordScreen onDone={clearPasswordRecovery} />;
   }
 
   if (!user) {

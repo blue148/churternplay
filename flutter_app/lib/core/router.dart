@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/models/library_entry.dart';
 import '../features/auth/auth_screen.dart';
+import '../features/auth/forgot_password_screen.dart';
+import '../features/auth/reset_password_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/game_nite/dice_roller_page.dart';
 import '../features/game_nite/game_nite_screen.dart';
@@ -21,14 +24,29 @@ import '../features/shell/app_shell.dart';
 import '../providers/auth_provider.dart';
 import 'supabase_client.dart';
 
-// ChangeNotifier that triggers router refresh when auth state changes
-class _AuthChangeNotifier extends ChangeNotifier {
-  _AuthChangeNotifier() {
-    supabase.auth.onAuthStateChange.listen((_) => notifyListeners());
+// ChangeNotifier that triggers router refresh when auth state changes, and
+// tracks whether the current session came from a password-recovery deep
+// link — while true, the router forces navigation to the reset-password
+// screen regardless of what route was requested.
+class AuthChangeNotifier extends ChangeNotifier {
+  bool passwordRecovery = false;
+
+  AuthChangeNotifier() {
+    supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        passwordRecovery = true;
+      }
+      notifyListeners();
+    });
+  }
+
+  void clearPasswordRecovery() {
+    passwordRecovery = false;
+    notifyListeners();
   }
 }
 
-final _authChangeNotifier = _AuthChangeNotifier();
+final authChangeNotifier = AuthChangeNotifier();
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Watch auth so the provider rebuilds if needed (belt-and-suspenders)
@@ -36,14 +54,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: '/dashboard',
-    refreshListenable: _authChangeNotifier,
+    refreshListenable: authChangeNotifier,
     redirect: (context, state) {
       final isAuthenticated = supabase.auth.currentSession != null;
-      final onAuth = state.matchedLocation == '/auth';
-      final onPublicPage =
-          onAuth || state.matchedLocation == PrivacyPolicyScreen.routePath;
+      final loc = state.matchedLocation;
+      final onAuth = loc == '/auth';
+      final onResetPassword = loc == ResetPasswordScreen.routePath;
+      final onPublicPage = onAuth ||
+          loc == ForgotPasswordScreen.routePath ||
+          loc == PrivacyPolicyScreen.routePath;
 
-      if (!isAuthenticated && !onPublicPage) return '/auth';
+      if (authChangeNotifier.passwordRecovery && !onResetPassword) {
+        return ResetPasswordScreen.routePath;
+      }
+      if (!isAuthenticated && !onPublicPage && !onResetPassword) return '/auth';
       if (isAuthenticated && onAuth) return '/dashboard';
       return null;
     },
@@ -51,6 +75,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth',
         builder: (_, __) => const AuthScreen(),
+      ),
+      GoRoute(
+        path: ForgotPasswordScreen.routePath,
+        builder: (_, __) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: ResetPasswordScreen.routePath,
+        builder: (_, __) => const ResetPasswordScreen(),
       ),
       GoRoute(
         path: PrivacyPolicyScreen.routePath,
