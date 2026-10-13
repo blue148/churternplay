@@ -98,8 +98,9 @@ const privacyPolicySections = <PrivacySection>[
           'is matched to a game, we may contribute the barcode and BoardGameGeek '
           'identifier to GameUPC to improve future lookups.',
       'Other users. Your username, display name, profile image, biography, '
-          'email address, and basic game statistics may currently be accessible '
-          'to signed-in users so they can find and connect with you. Friends or '
+          'and basic game statistics are visible to signed-in users so they can '
+          'find and connect with you. Your email address and phone number are '
+          'not shown to other users. Friends or '
           'people to whom you grant access may view the library information you '
           'share. Your phone number, birthdate, and state are not intended to '
           'appear in shared libraries.',

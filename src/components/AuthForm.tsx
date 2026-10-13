@@ -84,7 +84,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
             {resetSent ? (
               <div className="space-y-6">
                 <div className="bg-slate-50 border thin-rule rule-line text-slate-700 px-4 py-3 text-sm font-body input-radius">
-                  If an account exists for that email or phone, a reset link has been sent. Check your inbox.
+                  If an account exists for that email, a reset link has been sent. Check your inbox.
                 </div>
                 <button
                   onClick={backToSignIn}
@@ -97,16 +97,16 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
               <form onSubmit={handleResetSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="resetId" className="block text-xs font-body text-slate-500 uppercase tracking-wider mb-2">
-                    Email or Phone
+                    Email
                   </label>
                   <input
                     id="resetId"
-                    type="text"
+                    type="email"
                     value={resetId}
                     onChange={(e) => setResetId(e.target.value)}
                     className="w-full px-4 py-3 bg-cream border thin-rule rule-line input-radius focus:outline-none focus:bg-white transition font-body text-sm"
                     required
-                    autoComplete="username"
+                    autoComplete="email"
                   />
                 </div>
 
@@ -241,7 +241,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                   type="button"
                   onClick={() => {
                     setIsForgotPassword(true);
-                    setResetId(loginId);
+                    setResetId(loginId.includes('@') ? loginId : '');
                     setError('');
                   }}
                   className="mt-2 text-xs font-body text-slate-500 hover:text-slate-800 transition"

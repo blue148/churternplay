@@ -14,12 +14,12 @@ abstract class FriendsService {
     // always the other party, regardless of who sent the original request.
     final sent = await supabase
         .from('user_friends')
-        .select('*, friend:profiles!friend_id(*)')
+        .select('*, friend:public_profiles!friend_id(*)')
         .eq('user_id', userId)
         .eq('status', 'accepted');
     final received = await supabase
         .from('user_friends')
-        .select('*, friend:profiles!user_id(*)')
+        .select('*, friend:public_profiles!user_id(*)')
         .eq('friend_id', userId)
         .eq('status', 'accepted');
     return [
@@ -50,7 +50,7 @@ abstract class FriendsService {
   static Future<List<UserFriend>> getPendingRequests(String userId) async {
     final data = await supabase
         .from('user_friends')
-        .select('*, friend:profiles!user_id(*)')
+        .select('*, friend:public_profiles!user_id(*)')
         .eq('friend_id', userId)
         .eq('status', 'pending');
     return data.map((e) => UserFriend.fromJson(e)).toList();
@@ -63,7 +63,7 @@ abstract class FriendsService {
       String userId) async {
     final data = await supabase
         .from('user_friends')
-        .select('*, friend:profiles!friend_id(*)')
+        .select('*, friend:public_profiles!friend_id(*)')
         .eq('user_id', userId)
         .eq('status', 'pending');
     return data.map((e) => UserFriend.fromJson(e)).toList();
@@ -114,7 +114,7 @@ abstract class FriendsService {
     // standalone .ilike() call) silently breaks the match instead of erroring.
     final q = query.replaceAll(',', '');
     final data = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select()
         .or('username.ilike.*$q*,full_name.ilike.*$q*')
         .limit(20);
@@ -127,7 +127,7 @@ abstract class FriendsService {
       String userId) async {
     final data = await supabase
         .from('shared_library_access')
-        .select('*, owner:profiles!owner_id(*)')
+        .select('*, owner:public_profiles!owner_id(*)')
         .eq('viewer_id', userId);
     return data.map((e) => SharedLibraryAccess.fromJson(e)).toList();
   }

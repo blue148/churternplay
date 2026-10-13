@@ -10,40 +10,27 @@ abstract class AuthService {
     required String identifier,
     required String password,
   }) async {
-    final email =
-        identifier.contains('@') ? identifier : await _getEmailByPhone(identifier);
+    final email = identifier.contains('@')
+        ? identifier
+        : await _getEmailByPhone(identifier, password);
     await supabase.auth.signInWithPassword(email: email, password: password);
     AnalyticsService.logEvent('sign_in');
   }
 
-  static Future<String> _getEmailByPhone(String phone) async {
-    final digits = phone.replaceAll(RegExp(r'\D'), '');
-    final data = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('phone_digits', digits)
-        .maybeSingle();
-    if (data == null) throw Exception('Invalid login credentials');
-    return data['email'] as String;
+  /// The `resolve_phone_login` RPC only returns the email when the password
+  /// also matches (and throttles failures), so it can't be used to map
+  /// phone numbers to email addresses.
+  static Future<String> _getEmailByPhone(String phone, String password) async {
+    final email = await supabase.rpc('resolve_phone_login',
+        params: {'p_phone': phone, 'p_password': password});
+    if (email == null) throw Exception('Invalid login credentials');
+    return email as String;
   }
 
-  /// Sends a password-reset email, resolving phone to its account's email
-  /// first. Silently no-ops for an unrecognized phone number rather than
-  /// surfacing a "not found" error, so this can't be used to enumerate
-  /// registered phone numbers — callers should show the same "check your
-  /// email" message regardless, same as Supabase already does for an
-  /// unrecognized email.
-  static Future<void> requestPasswordReset(String identifier) async {
-    String email;
-    if (identifier.contains('@')) {
-      email = identifier;
-    } else {
-      try {
-        email = await _getEmailByPhone(identifier);
-      } catch (_) {
-        return;
-      }
-    }
+  /// Sends a password-reset email. Email only: resolving a phone number to
+  /// an email without the password would let anyone look up whose number
+  /// is whose. Supabase doesn't reveal whether the email is registered.
+  static Future<void> requestPasswordReset(String email) async {
     await supabase.auth.resetPasswordForEmail(
       email,
       redirectTo: 'churternplay://reset-password',

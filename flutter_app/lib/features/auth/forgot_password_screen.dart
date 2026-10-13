@@ -90,7 +90,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'If an account exists for that email or phone, a reset link has been sent. Check your inbox.',
+                          'If an account exists for that email, a reset link has been sent. Check your inbox.',
                           style: GoogleFonts.atkinsonHyperlegibleNext(
                             fontSize: 13,
                             color: AppColors.ink400,
@@ -113,7 +113,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'EMAIL OR PHONE',
+                              'EMAIL',
                               style: GoogleFonts.atkinsonHyperlegibleNext(
                                 fontSize: 10,
                                 letterSpacing: 2,
@@ -124,9 +124,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _identifierCtrl,
+                              keyboardType: TextInputType.emailAddress,
+                              autofillHints: const [AutofillHints.email],
                               validator: (v) => v == null || v.isEmpty
                                   ? 'Required'
-                                  : null,
+                                  : !v.contains('@')
+                                      ? 'Enter the email on your account'
+                                      : null,
                               style: GoogleFonts.atkinsonHyperlegibleNext(
                                   fontSize: 14, color: AppColors.ink500),
                               decoration: InputDecoration(

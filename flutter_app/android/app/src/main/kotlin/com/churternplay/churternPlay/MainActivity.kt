@@ -1,4 +1,4 @@
-package com.churntern_play.churntern_play
+package com.churternplay.churternPlay
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -20,28 +20,25 @@ function isEmail(identifier: string) {
   return identifier.includes('@');
 }
 
-/** Looks up the email tied to a phone number, matching by digits only. */
-async function getEmailByPhone(phone: string) {
-  const digits = phone.replace(/\D/g, '');
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('phone_digits', digits)
-    .maybeSingle();
+/**
+ * Looks up the email tied to a phone number. The resolve_phone_login RPC only
+ * returns it when the password also matches (and throttles failures), so it
+ * can't be used to map phone numbers to email addresses.
+ */
+async function getEmailByPhone(phone: string, password: string) {
+  const { data, error } = await supabase.rpc('resolve_phone_login', {
+    p_phone: phone,
+    p_password: password,
+  });
 
   if (error) throw error;
   if (!data) throw new Error('Invalid login credentials');
-  return data.email as string;
-}
-
-/** Resolves an email-or-phone identifier to the account's email. */
-export async function resolveLoginEmail(identifier: string) {
-  return isEmail(identifier) ? identifier : await getEmailByPhone(identifier);
+  return data as string;
 }
 
 /** Signs in with an email or a phone number, resolving phone to its account's email first. */
 export async function signIn(identifier: string, password: string) {
-  const email = await resolveLoginEmail(identifier);
+  const email = isEmail(identifier) ? identifier : await getEmailByPhone(identifier, password);
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -53,21 +50,11 @@ export async function signIn(identifier: string, password: string) {
 }
 
 /**
- * Sends a password-reset email, resolving phone to its account's email first.
- * Silently no-ops for an unrecognized phone number (rather than the caller's
- * generic "not found" error) so this can't be used to enumerate registered
- * phone numbers — callers should show the same "check your email" message
- * whether or not anything was actually sent, same as Supabase already does
- * for unrecognized emails.
+ * Sends a password-reset email. Email only: resolving a phone number to an
+ * email without the password would let anyone look up whose number is whose.
+ * Supabase doesn't reveal whether the email is registered.
  */
-export async function requestPasswordReset(identifier: string) {
-  let email: string;
-  try {
-    email = await resolveLoginEmail(identifier);
-  } catch {
-    return;
-  }
-
+export async function requestPasswordReset(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: window.location.origin,
   });

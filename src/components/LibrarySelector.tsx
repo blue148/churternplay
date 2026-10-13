@@ -41,7 +41,7 @@ export default function LibrarySelector({
 
   const filteredLibraries = sharedLibraries.filter(library =>
     library.owner.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    library.owner.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (library.owner.full_name ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatLastUpdated = (dateString: string) => {

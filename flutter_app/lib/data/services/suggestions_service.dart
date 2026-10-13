@@ -19,7 +19,7 @@ abstract class SuggestionsService {
       String recipientId) async {
     final data = await supabase
         .from('game_suggestions')
-        .select('*, sender:profiles!sender_id(*), game:shared_games(*)')
+        .select('*, sender:public_profiles!sender_id(*), game:shared_games(*)')
         .eq('recipient_id', recipientId)
         .eq('status', 'pending')
         .order('created_at', ascending: false);
