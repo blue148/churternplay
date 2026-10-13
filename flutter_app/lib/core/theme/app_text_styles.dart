@@ -4,20 +4,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 abstract class AppTextStyles {
-  // Display — Cormorant Garamond (serif)
+  // Display — Literata (serif)
   static TextStyle display(
           {double size = 32, FontWeight weight = FontWeight.w300, Color? color}) =>
-      GoogleFonts.cormorantGaramond(
+      GoogleFonts.literata(
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColors.ink600,
         letterSpacing: 0.5,
       );
 
-  // Body — Jost (sans-serif)
+  // Body — Atkinson Hyperlegible Next (sans-serif)
   static TextStyle body(
           {double size = 14, FontWeight weight = FontWeight.w400, Color? color}) =>
-      GoogleFonts.jost(
+      GoogleFonts.atkinsonHyperlegibleNext(
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColors.ink500,

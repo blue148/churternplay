@@ -4,13 +4,423 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Churtern•Play - Your Board Game Collection</title>
-    <meta property="og:image" content="https://bolt.new/static/og_default.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://bolt.new/static/og_default.png" />
+    <meta name="description" content="Churtern Play — catalogue your board games, pick who plays next, and track every win. Free web app, with iOS and Android on the way." />
+    <title>Churtern Play — Your Board Game Collection, Sorted</title>
+    <meta property="og:title" content="Churtern Play" />
+    <meta property="og:description" content="Catalogue your board games, pick who plays next, and track every win." />
+    <meta name="twitter:card" content="summary" />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #fdf8f0;
+        --card: #fffdf9;
+        --ink: #352e22;
+        --ink-soft: #574e3e;
+        --muted: #6b604f;
+        --clay: #8f3e14;
+        --clay-mid: #b85c28;
+        --clay-light: #f5d5bc;
+        --forest: #3a7040;
+        --sky: #2e8282;
+        --plum: #74389a;
+        --rule: #e7d8bb;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+
+      h1, h2, h3 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 500;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      a { color: var(--clay); }
+      a:focus-visible, button:focus-visible { outline: 3px solid #e2b83a; outline-offset: 3px; }
+
+      .wrap {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      /* ── Nav ─────────────────────────────────────────────────────── */
+      header.site {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(253, 248, 240, 0.92);
+        backdrop-filter: blur(6px);
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 0;
+      }
+
+      .wordmark {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.4rem;
+        letter-spacing: 0.02em;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .nav-links a:hover { color: var(--clay); }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border-radius: 999px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+      }
+      .btn-primary { background: var(--clay-mid); color: #fffdf9; }
+      .btn-primary:hover { background: var(--clay); }
+      .btn-ghost { color: var(--ink); border-color: var(--rule); }
+      .btn-ghost:hover { border-color: var(--clay-mid); color: var(--clay-mid); }
+
+      /* ── Hero ────────────────────────────────────────────────────── */
+      .hero {
+        padding: clamp(56px, 10vw, 108px) 0 clamp(48px, 8vw, 80px);
+        text-align: center;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin: 0 0 14px;
+        color: var(--clay);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.4rem, 6vw, 3.8rem);
+        max-width: 18ch;
+        margin: 0 auto;
+      }
+
+      .hero p.lede {
+        max-width: 56ch;
+        margin: 22px auto 0;
+        font-size: 1.15rem;
+        color: var(--ink-soft);
+      }
+
+      .hero-actions {
+        margin-top: 34px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .hero-note {
+        margin-top: 18px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      /* ── Sections ────────────────────────────────────────────────── */
+      section { padding: clamp(40px, 7vw, 76px) 0; }
+
+      .section-head { text-align: center; max-width: 62ch; margin: 0 auto 40px; }
+      .section-head h2 { font-size: clamp(1.7rem, 4vw, 2.3rem); }
+      .section-head p { color: var(--muted); margin-top: 12px; }
+
+      /* ── Feature grid ────────────────────────────────────────────── */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+      }
+
+      .feature {
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 26px;
+      }
+
+      .feature .icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 14px;
+        color: #fffdf9;
+      }
+
+      .feature h3 { font-size: 1.1rem; margin-bottom: 8px; }
+      .feature p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
+      /* ── How it works ────────────────────────────────────────────── */
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 28px;
+        counter-reset: step;
+      }
+
+      .step { position: relative; padding-left: 46px; }
+      .step::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--clay-light);
+        color: var(--clay);
+        font-family: Georgia, serif;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .step h3 { font-size: 1.05rem; margin-bottom: 6px; }
+      .step p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
+      /* ── Download ────────────────────────────────────────────────── */
+      .download-card {
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: clamp(32px, 6vw, 56px);
+        text-align: center;
+      }
+
+      .store-badges {
+        margin-top: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .store-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        color: var(--muted);
+        background: var(--paper);
+        cursor: default;
+        font-size: 0.9rem;
+        text-align: left;
+      }
+      .store-badge .store-icon { font-size: 1.4rem; }
+      .store-badge .store-label { line-height: 1.3; }
+      .store-badge .store-label strong { display: block; font-size: 0.95rem; color: var(--ink-soft); }
+      .store-badge .store-label span { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+      /* ── CTA band ────────────────────────────────────────────────── */
+      .cta-band {
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: 4px;
+        padding: clamp(36px, 7vw, 60px);
+        text-align: center;
+      }
+      .cta-band h2 { color: var(--paper); font-size: clamp(1.6rem, 4vw, 2.1rem); }
+      .cta-band p { color: #d8cfbf; max-width: 50ch; margin: 14px auto 0; }
+      .cta-band .hero-actions { margin-top: 28px; }
+      .cta-band .btn-ghost { color: var(--paper); border-color: #574e3e; }
+      .cta-band .btn-ghost:hover { border-color: var(--paper); color: var(--paper); }
+
+      footer.site {
+        border-top: 1px solid var(--rule);
+        padding: 32px 0 48px;
+      }
+      .footer-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .footer-links { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+      .footer-links a { color: var(--muted); text-decoration: none; }
+      .footer-links a:hover { color: var(--clay); }
+
+      @media (max-width: 560px) {
+        .nav-links { display: none; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="site">
+      <nav class="nav wrap">
+        <a class="wordmark" href="/">Churtern&nbsp;Play</a>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#download">Download</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+        </ul>
+        <a class="btn btn-primary" href="/app/">Sign In</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero wrap">
+        <p class="eyebrow">Board game collection manager</p>
+        <h1>Every game you own. Every win you've earned. One shelf.</h1>
+        <p class="lede">
+          Churtern Play catalogues your board game collection, helps your group pick
+          what to play and who goes first, and quietly keeps score so bragging
+          rights are backed by data.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/app/">Get started — it's free</a>
+          <a class="btn btn-ghost" href="#download">Download the app</a>
+        </div>
+        <p class="hero-note">Free web app today. iOS and Android apps are in beta and coming soon.</p>
+      </section>
+
+      <section id="features" class="wrap">
+        <div class="section-head">
+          <h2>Everything for game night, in one place</h2>
+          <p>From the shelf to the table, Churtern Play covers the whole session.</p>
+        </div>
+        <div class="features">
+          <div class="feature">
+            <div class="icon" style="background: var(--clay-mid);">📷</div>
+            <h3>Scan to catalogue</h3>
+            <p>Scan a barcode or search by title and Churtern Play pulls in cover art, player count, playtime, and more automatically.</p>
+          </div>
+          <div class="feature">
+            <div class="icon" style="background: var(--forest);">📚</div>
+            <h3>Your collection, organized</h3>
+            <p>Filter and sort by type, category, mechanic, player count, or playtime. Track favorites, rankings, and what's for sale.</p>
+          </div>
+          <div class="feature">
+            <div class="icon" style="background: var(--sky);">🎲</div>
+            <h3>Game Nite Tools</h3>
+            <p>Spin the wheel to pick tonight's game, shuffle for first player, and run turn and session timers right from your phone.</p>
+          </div>
+          <div class="feature">
+            <div class="icon" style="background: var(--plum);">🏆</div>
+            <h3>Track wins and sessions</h3>
+            <p>Log who played, who won, and the score. Churtern Play turns your play history into stats and streaks.</p>
+          </div>
+          <div class="feature">
+            <div class="icon" style="background: var(--clay);">🤝</div>
+            <h3>Friends &amp; shared libraries</h3>
+            <p>Connect with friends, browse each other's collections, and get suggestions for what to bring to game night.</p>
+          </div>
+          <div class="feature">
+            <div class="icon" style="background: var(--clay-mid);">📈</div>
+            <h3>A dashboard that makes sense</h3>
+            <p>See your most-played games, recent additions, and win rates at a glance, right when you open the app.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap">
+        <div class="section-head">
+          <h2>Up and running in minutes</h2>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <h3>Create your account</h3>
+            <p>Sign up free with just an email and a username — no credit card, no catch.</p>
+          </div>
+          <div class="step">
+            <h3>Add your games</h3>
+            <p>Scan a barcode, search by title, or enter a game manually to build your shelf.</p>
+          </div>
+          <div class="step">
+            <h3>Play and log it</h3>
+            <p>Pick a game, pick a player, play, and log the winner. Your stats build themselves.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="download" class="wrap">
+        <div class="download-card">
+          <h2>Get Churtern Play on your phone</h2>
+          <p style="color: var(--muted); max-width: 46ch; margin: 12px auto 0;">
+            The mobile apps are currently in beta. In the meantime, the web app works
+            great on your phone's browser — <a href="/app/">sign in here</a> to get started.
+          </p>
+          <div class="store-badges">
+            <span class="store-badge" aria-disabled="true">
+              <span class="store-icon">🍎</span>
+              <span class="store-label"><span>Coming soon to</span><strong>App Store</strong></span>
+            </span>
+            <span class="store-badge" aria-disabled="true">
+              <span class="store-icon">▶</span>
+              <span class="store-label"><span>Coming soon to</span><strong>Google Play</strong></span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap">
+        <div class="cta-band">
+          <h2>Stop losing track of your shelf</h2>
+          <p>Catalogue your collection tonight and let Churtern Play handle the rest of game night.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/app/">Create a free account</a>
+            <a class="btn btn-ghost" href="/about/">Learn more about us</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site">
+      <div class="wrap footer-row">
+        <span>© 2026 Churtern Play</span>
+        <ul class="footer-links">
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/app/">Sign In</a></li>
+        </ul>
+      </div>
+    </footer>
   </body>
 </html>

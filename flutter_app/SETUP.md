@@ -68,3 +68,23 @@ flutter build appbundle --release
 ```
 
 Submit iOS via Xcode or Transporter. Submit Android via the Play Console.
+
+### Android release signing
+
+Release builds are signed with the Play **upload key**, configured in
+`android/key.properties` (gitignored):
+
+```properties
+storePassword=…
+keyPassword=…
+keyAlias=upload
+storeFile=/Users/<you>/keystores/churternplay-upload.jks
+```
+
+Without that file, release builds fall back to the debug key (fine for
+`flutter run --release`; Play Console rejects debug-signed bundles). Keep the
+keystore and its password backed up outside the repo. With Play App Signing
+enabled, a lost upload key can be reset through Play Console support.
+
+The Android application ID is `com.churternplay.churternPlay` (matches the iOS
+bundle ID) and cannot change after the first Play upload.

@@ -348,7 +348,7 @@ export async function sendFriendRequest(userId: string, friendId: string) {
     })
     .select(`
       *,
-      friend:profiles!user_friends_friend_id_fkey(*)
+      friend:public_profiles!friend_id(*)
     `)
     .single();
 
@@ -363,7 +363,7 @@ export async function acceptFriendRequest(requestId: string) {
     .eq('id', requestId)
     .select(`
       *,
-      friend:profiles!user_friends_friend_id_fkey(*)
+      friend:public_profiles!friend_id(*)
     `)
     .single();
 
@@ -376,7 +376,7 @@ export async function getUserFriends(userId: string) {
     .from('user_friends')
     .select(`
       *,
-      friend:profiles!user_friends_friend_id_fkey(*)
+      friend:public_profiles!friend_id(*)
     `)
     .or(`and(user_id.eq.${userId},status.eq.accepted),and(friend_id.eq.${userId},status.eq.accepted)`)
     .order('created_at', { ascending: false });
@@ -390,7 +390,7 @@ export async function getPendingFriendRequests(userId: string) {
     .from('user_friends')
     .select(`
       *,
-      friend:profiles!user_friends_user_id_fkey(*)
+      friend:public_profiles!user_id(*)
     `)
     .eq('friend_id', userId)
     .eq('status', 'pending')
@@ -452,8 +452,8 @@ export async function shareLibraryWith(ownerId: string, viewerId: string, access
     })
     .select(`
       *,
-      owner:profiles!shared_library_access_owner_id_fkey(*),
-      viewer:profiles!shared_library_access_viewer_id_fkey(*)
+      owner:public_profiles!owner_id(*),
+      viewer:public_profiles!viewer_id(*)
     `)
     .single();
 
@@ -476,7 +476,7 @@ export async function getSharedLibraries(userId: string): Promise<SharedLibrary[
     .from('shared_library_access')
     .select(`
       *,
-      owner:profiles!shared_library_access_owner_id_fkey(*)
+      owner:public_profiles!owner_id(*)
     `)
     .eq('viewer_id', userId)
     .order('granted_at', { ascending: false });
@@ -571,7 +571,7 @@ export async function getFriendsWithLibraryAccess(userId: string) {
     .from('shared_library_access')
     .select(`
       *,
-      viewer:profiles!shared_library_access_viewer_id_fkey(*)
+      viewer:public_profiles!viewer_id(*)
     `)
     .eq('owner_id', userId)
     .order('granted_at', { ascending: false });
@@ -582,9 +582,9 @@ export async function getFriendsWithLibraryAccess(userId: string) {
 
 export async function searchUsers(query: string, excludeUserId: string, limit: number = 10) {
   const { data, error } = await supabase
-    .from('profiles')
-    .select('id, username, email, avatar_url, total_games')
-    .or(`username.ilike.%${query}%,email.ilike.%${query}%`)
+    .from('public_profiles')
+    .select('id, username, full_name, avatar_url, total_games')
+    .or(`username.ilike.*${query.replace(/,/g, '')}*,full_name.ilike.*${query.replace(/,/g, '')}*`)
     .neq('id', excludeUserId)
     .order('total_games', { ascending: false })
     .limit(limit);
@@ -601,7 +601,7 @@ export async function getGameOwnership(gameId: string, friendIds: string[]) {
     .select(`
       user_id,
       game_id,
-      profiles!user_library_user_id_fkey(id, username, avatar_url)
+      owner:public_profiles!user_id(id, username, avatar_url)
     `)
     .eq('game_id', gameId)
     .in('user_id', friendIds);
@@ -610,6 +610,6 @@ export async function getGameOwnership(gameId: string, friendIds: string[]) {
   return data.map(entry => ({
     user_id: entry.user_id,
     game_id: entry.game_id,
-    owner: entry.profiles
+    owner: entry.owner
   }));
 }

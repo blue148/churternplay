@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, User, Mail, FileText, Lock, Upload, Check, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, User, Mail, Phone, FileText, Lock, Upload, Check, LogOut, ChevronDown, ChevronUp, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -23,6 +23,7 @@ const PREDEFINED_AVATARS = [
 export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: ProfileDrawerProps) {
   const { profile, user, refreshProfile, signOut } = useAuth();
   const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -35,11 +36,15 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
   const [success, setSuccess] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordSectionOpen, setPasswordSectionOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
       setUsername(profile.username || '');
+      setPhone(profile.phone || '');
       setBio(profile.bio || '');
       setAvatarUrl(profile.avatar_url || '');
     }
@@ -54,6 +59,8 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
       setPasswordSectionOpen(false);
       setNewPassword('');
       setConfirmPassword('');
+      setDeleteConfirmOpen(false);
+      setDeleteError('');
     }
   }, [isOpen]);
 
@@ -142,6 +149,7 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
         .from('profiles')
         .update({
           username: username.trim(),
+          phone: phone.trim() || null,
           bio: bio.trim(),
           avatar_url: avatarUrl.trim(),
           updated_at: new Date().toISOString(),
@@ -163,6 +171,22 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
   const handleSignOut = async () => {
     onClose();
     await signOut();
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError('');
+
+    try {
+      const { error: deleteErr } = await supabase.functions.invoke('delete-account');
+      if (deleteErr) throw deleteErr;
+
+      onClose();
+      await signOut();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete account. Please try again.');
+      setDeleting(false);
+    }
   };
 
   if (mode !== 'page' && !isOpen) return null;
@@ -229,6 +253,21 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
                   maxLength={50}
                   className="w-full px-4 py-2.5 border thin-rule rule-line bg-white text-slate-900 font-body text-sm focus:outline-none focus:border-slate-400 transition-colors"
                 />
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-xs font-body text-slate-500 tracking-wider mb-2">
+                  <Phone className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  Phone <span className="normal-case text-slate-400">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 555 123 4567"
+                  className="w-full px-4 py-2.5 border thin-rule rule-line bg-white text-slate-900 font-body text-sm focus:outline-none focus:border-slate-400 transition-colors"
+                />
+                <p className="mt-1 text-xs font-body text-slate-400">Used as a secondary contact method, not for sign-in</p>
               </div>
 
               <div>
@@ -407,6 +446,17 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
               </form>
             )}
           </div>
+
+          <div className="px-6 pb-6 border-t thin-rule rule-line pt-4">
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmOpen(true)}
+              className="w-full flex items-center gap-2 text-xs font-body text-terracotta-700 tracking-wider hover:text-terracotta-900 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+              Delete Account
+            </button>
+          </div>
     </div>
   );
 
@@ -422,6 +472,49 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
     </div>
   );
 
+  const deleteConfirmModal = deleteConfirmOpen && (
+    <>
+      <div className="fixed inset-0 bg-black/40 z-[60] transition-opacity" onClick={() => !deleting && setDeleteConfirmOpen(false)} />
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-cream linen-texture border thin-rule rule-line container-radius p-8">
+          <div className="flex flex-col items-center text-center mb-4">
+            <AlertTriangle className="w-10 h-10 text-terracotta-600 mb-3" strokeWidth={1.5} />
+            <h3 className="text-2xl font-display font-light text-slate-900">Delete account?</h3>
+          </div>
+          <p className="text-sm font-body text-slate-600 text-center mb-6">
+            This permanently deletes your account and cannot be undone. Your profile, library, wishlist,
+            game sessions, and friends will all be removed.
+          </p>
+
+          {deleteError && (
+            <div className="px-4 py-3 mb-4 bg-terracotta-50 border thin-rule border-terracotta-300 text-terracotta-900 text-sm font-body input-radius">
+              {deleteError}
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={deleting}
+              className="flex-1 py-2.5 border thin-rule rule-line font-body text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="flex-1 py-2.5 bg-terracotta-700 text-cream font-body text-sm hover:bg-terracotta-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleting ? 'Deleting...' : 'Delete Account'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
   if (mode === 'page') {
     return (
       <div className="min-h-screen bg-cream flex flex-col pb-24">
@@ -432,6 +525,7 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
           {innerContent}
         </div>
         {footer}
+        {deleteConfirmModal}
       </div>
     );
   }
@@ -447,6 +541,7 @@ export default function ProfileDrawer({ isOpen, onClose, mode = 'drawer' }: Prof
           </button>
         </div>
         {innerContent}
+        {deleteConfirmModal}
         {footer}
       </div>
     </>

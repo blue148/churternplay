@@ -11,6 +11,7 @@ import '../../data/models/library_entry.dart';
 import '../../data/models/victory_stats.dart';
 import '../../providers/library_provider.dart';
 import 'widgets/log_play_sheet.dart';
+import 'widgets/suggest_to_friend_sheet.dart';
 
 /// Full-screen detail view for a single library entry, reachable from any
 /// tab (dashboard tiles, library cards). Reads the live entry out of
@@ -40,7 +41,7 @@ class GameDetailScreen extends ConsumerWidget {
         appBar: AppBar(),
         body: Center(
           child: Text('Game not found',
-              style: GoogleFonts.cormorantGaramond(
+              style: GoogleFonts.literata(
                   fontSize: 22, color: AppColors.ink300)),
         ),
       );
@@ -67,6 +68,8 @@ class GameDetailScreen extends ConsumerWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.ink400),
             itemBuilder: (_) => [
+              const PopupMenuItem(
+                  value: 'suggest', child: Text('Suggest to a Friend')),
               PopupMenuItem(
                 value: 'sale',
                 child: Text(
@@ -77,6 +80,8 @@ class GameDetailScreen extends ConsumerWidget {
             ],
             onSelected: (action) {
               switch (action) {
+                case 'suggest':
+                  showSuggestToFriendSheet(context, game: game);
                 case 'sale':
                   ref
                       .read(libraryProvider.notifier)
@@ -133,7 +138,7 @@ class GameDetailScreen extends ConsumerWidget {
               icon: const Icon(Icons.add_circle_outline, size: 18),
               label: Text(
                 'Log Play',
-                style: GoogleFonts.jost(
+                style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Colors.white),
@@ -150,10 +155,10 @@ class GameDetailScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Remove game?',
-            style: GoogleFonts.cormorantGaramond(fontSize: 22)),
+            style: GoogleFonts.literata(fontSize: 22)),
         content: Text(
           'Remove "${entry.game.name}" from your library?',
-          style: GoogleFonts.jost(fontSize: 14, color: AppColors.ink400),
+          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
         ),
         actions: [
           TextButton(
@@ -167,7 +172,7 @@ class GameDetailScreen extends ConsumerWidget {
               context.pop();
             },
             child: Text('Remove',
-                style: GoogleFonts.jost(color: AppColors.clay500)),
+                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -217,7 +222,7 @@ class _CoverHeader extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   color: AppColors.forest600,
                   child: Text('FOR SALE',
-                      style: GoogleFonts.jost(
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
                           fontSize: 10, color: Colors.white, letterSpacing: 1)),
                 ),
               ),
@@ -251,7 +256,7 @@ class _TitleBlock extends StatelessWidget {
             Expanded(
               child: Text(
                 game.name,
-                style: GoogleFonts.cormorantGaramond(
+                style: GoogleFonts.literata(
                     fontSize: 26,
                     fontWeight: FontWeight.w500,
                     color: AppColors.ink600),
@@ -267,7 +272,7 @@ class _TitleBlock extends StatelessWidget {
                 ),
                 child: Text('EXPANSION',
                     style:
-                        GoogleFonts.jost(fontSize: 9, color: AppColors.ink300)),
+                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 9, color: AppColors.ink300)),
               ),
           ],
         ),
@@ -275,7 +280,7 @@ class _TitleBlock extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitleParts.join(' · '),
-            style: GoogleFonts.jost(fontSize: 13, color: AppColors.ink300),
+            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink300),
           ),
         ],
       ],
@@ -315,7 +320,7 @@ class _StatsRow extends StatelessWidget {
               const SizedBox(width: 5),
               Text(label,
                   style:
-                      GoogleFonts.jost(fontSize: 13, color: AppColors.ink400)),
+                      GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400)),
             ],
           ),
       ],
@@ -354,7 +359,7 @@ class _VictorySection extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Last played ${DateFormat('MMM d, yyyy').format(lastPlayed)}',
-            style: GoogleFonts.jost(fontSize: 12, color: AppColors.ink300),
+            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink300),
           ),
         ],
       ],
@@ -381,11 +386,11 @@ class _StatTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value,
-                style: GoogleFonts.cormorantGaramond(
+                style: GoogleFonts.literata(
                     fontSize: 24, color: AppColors.ink600)),
             const SizedBox(height: 2),
             Text(label,
-                style: GoogleFonts.jost(
+                style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontSize: 9, letterSpacing: 1.0, color: AppColors.ink300)),
           ],
         ),
@@ -427,7 +432,7 @@ class _TagsSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(tag,
-                    style: GoogleFonts.jost(
+                    style: GoogleFonts.atkinsonHyperlegibleNext(
                         fontSize: 11, color: AppColors.ink400)),
               ),
           ],
@@ -459,7 +464,7 @@ class _NotesSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(notes,
-              style: GoogleFonts.jost(
+              style: GoogleFonts.atkinsonHyperlegibleNext(
                   fontSize: 13, color: AppColors.ink500, height: 1.4)),
         ),
       ],
@@ -490,14 +495,14 @@ class _PlayHistorySection extends StatelessWidget {
                   const Icon(Icons.circle, size: 6, color: AppColors.clay400),
                   const SizedBox(width: 10),
                   Text(DateFormat('EEEE, MMM d, yyyy').format(d),
-                      style: GoogleFonts.jost(
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
                           fontSize: 13, color: AppColors.ink400)),
                 ],
               ),
             )),
         if (sorted.length > recent.length)
           Text('+ ${sorted.length - recent.length} more',
-              style: GoogleFonts.jost(fontSize: 12, color: AppColors.ink200)),
+              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink200)),
       ],
     );
   }
@@ -512,7 +517,7 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         text.toUpperCase(),
-        style: GoogleFonts.jost(
+        style: GoogleFonts.atkinsonHyperlegibleNext(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.2,

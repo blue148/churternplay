@@ -24,7 +24,7 @@ Click "Add a variable" and add these one by one:
 
 **Variable 2:**
 - **Key:** `VITE_SUPABASE_ANON_KEY`
-- **Value:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vcmlsY3l0cnl0eGhmZmluZGd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MjAzNzYsImV4cCI6MjA4MzI5NjM3Nn0.tc8C2EZDgfg2QrGa5gpf0Zbj4p0m87j_4yK4w3Bi9Ug`
+- **Value:** `sb_publishable_UxLoSjJzgOzURjiQU9ITrQ_11hSxk7J`
 - **Scopes:** Check "Production" and "Deploy Previews"
 
 ### 3. Trigger a New Deploy

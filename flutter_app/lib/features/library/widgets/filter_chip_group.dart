@@ -34,7 +34,7 @@ class FilterChipGroup extends StatelessWidget {
       children: [
         Text(
           title.toUpperCase(),
-          style: GoogleFonts.jost(
+          style: GoogleFonts.atkinsonHyperlegibleNext(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.2,
@@ -50,7 +50,7 @@ class FilterChipGroup extends StatelessWidget {
               FilterChip(
                 label: Text(
                   capitalize ? _cap(option) : option,
-                  style: GoogleFonts.jost(
+                  style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontSize: 12,
                     color: selected.contains(option)
                         ? Colors.white

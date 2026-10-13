@@ -13,10 +13,10 @@
   NODE_VERSION = "22"
   SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
 
-# SPA routing - redirect all requests to index.html
+# SPA routing - redirect app sub-paths to the app shell
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/app/*"
+  to = "/app/index.html"
   status = 200
 
 # Security headers

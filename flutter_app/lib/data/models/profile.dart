@@ -31,10 +31,12 @@ class ProfilePreferences {
 
 class AppProfile {
   final String id;
-  final String email;
+  /// Null for other users' profiles — only the owner can read contact fields.
+  final String? email;
   final String username;
   final String? avatarUrl;
   final String? bio;
+  final String? phone;
   final ProfilePreferences preferences;
   final int totalGames;
   final int favoriteCount;
@@ -44,10 +46,11 @@ class AppProfile {
 
   const AppProfile({
     required this.id,
-    required this.email,
+    this.email,
     required this.username,
     this.avatarUrl,
     this.bio,
+    this.phone,
     required this.preferences,
     required this.totalGames,
     required this.favoriteCount,
@@ -58,10 +61,11 @@ class AppProfile {
 
   factory AppProfile.fromJson(Map<String, dynamic> json) => AppProfile(
         id: json['id'] as String,
-        email: json['email'] as String,
+        email: json['email'] as String?,
         username: json['username'] as String,
         avatarUrl: json['avatar_url'] as String?,
         bio: json['bio'] as String?,
+        phone: json['phone'] as String?,
         preferences: ProfilePreferences.fromJson(
             json['preferences'] as Map<String, dynamic>?),
         totalGames: json['total_games'] as int? ?? 0,

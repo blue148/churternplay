@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/library_entry.dart';
 import '../../providers/library_provider.dart';
+import '../library/widgets/add_game_sheet.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -53,7 +54,7 @@ class _SectionHeader extends StatelessWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.cormorantGaramond(
+              style: GoogleFonts.literata(
                 fontSize: 14,
                 fontWeight: FontWeight.w300,
                 color: AppColors.ink400,
@@ -91,17 +92,23 @@ class _QuickActions extends StatelessWidget {
               label: 'Game Picker',
               onTap: () => context.go('/game-nite/chooser'),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             _ActionCard(
               icon: Icons.people_outline,
               label: 'First Player',
               onTap: () => context.go('/game-nite/first-player'),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             _ActionCard(
               icon: Icons.timer_outlined,
               label: 'Turn Timer',
               onTap: () => context.go('/game-nite/turn-timer'),
+            ),
+            const SizedBox(width: 6),
+            _ActionCard(
+              icon: Icons.add_circle_outline,
+              label: 'Add Game',
+              onTap: () => showAddGameSheet(context),
             ),
           ],
         ),
@@ -127,7 +134,8 @@ class _ActionCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 72,
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             color: AppColors.parchment100,
             border: Border.all(color: AppColors.parchment300),
@@ -135,16 +143,18 @@ class _ActionCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppColors.clay400, size: 20),
-              const SizedBox(height: 8),
+              Icon(icon, color: AppColors.clay400, size: 18),
+              const SizedBox(height: 6),
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.jost(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.atkinsonHyperlegibleNext(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.ink400,
-                  height: 1.3,
+                  height: 1.15,
                 ),
               ),
             ],
@@ -217,7 +227,7 @@ class _MostPlayed extends StatelessWidget {
                           ),
                           child: Text(
                             '${entry.playCount}×',
-                            style: GoogleFonts.jost(
+                            style: GoogleFonts.atkinsonHyperlegibleNext(
                               fontSize: 9,
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -233,7 +243,7 @@ class _MostPlayed extends StatelessWidget {
                           entry.game.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.jost(
+                          style: GoogleFonts.atkinsonHyperlegibleNext(
                               fontSize: 9, color: AppColors.ink400),
                         ),
                       ),
@@ -305,7 +315,7 @@ class _StatTile extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GoogleFonts.cormorantGaramond(
+            style: GoogleFonts.literata(
               fontSize: 32,
               color: AppColors.ink600,
               height: 1,
@@ -314,7 +324,7 @@ class _StatTile extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.jost(
+            style: GoogleFonts.atkinsonHyperlegibleNext(
               fontSize: 10,
               letterSpacing: 1.2,
               color: AppColors.ink300,
@@ -411,14 +421,14 @@ class _RecentRow extends StatelessWidget {
                       entry.game.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.jost(
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.ink600),
                     ),
                     Text(
                       _timeAgo(entry.addedDate),
-                      style: GoogleFonts.jost(
+                      style: GoogleFonts.atkinsonHyperlegibleNext(
                           fontSize: 12, color: AppColors.ink200),
                     ),
                   ],

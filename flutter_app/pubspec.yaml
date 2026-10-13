@@ -43,6 +43,9 @@ dependencies:
   # shake gesture, so it also works in the simulator (Device > Shake)
   shake_gesture: ^2.1.0
 
+  # Avatar photo picking (Profile Details screen)
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

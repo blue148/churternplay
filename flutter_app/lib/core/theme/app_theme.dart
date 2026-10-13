@@ -40,13 +40,13 @@ abstract class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.parchment50,
-      textTheme: GoogleFonts.jostTextTheme().copyWith(
-        displayLarge: GoogleFonts.cormorantGaramond(fontSize: 48, fontWeight: FontWeight.w300),
-        displayMedium: GoogleFonts.cormorantGaramond(fontSize: 36, fontWeight: FontWeight.w300),
-        displaySmall: GoogleFonts.cormorantGaramond(fontSize: 28, fontWeight: FontWeight.w400),
-        headlineLarge: GoogleFonts.cormorantGaramond(fontSize: 24, fontWeight: FontWeight.w500),
-        headlineMedium: GoogleFonts.cormorantGaramond(fontSize: 20, fontWeight: FontWeight.w500),
-        headlineSmall: GoogleFonts.cormorantGaramond(fontSize: 18, fontWeight: FontWeight.w500),
+      textTheme: GoogleFonts.atkinsonHyperlegibleNextTextTheme().copyWith(
+        displayLarge: GoogleFonts.literata(fontSize: 48, fontWeight: FontWeight.w300),
+        displayMedium: GoogleFonts.literata(fontSize: 36, fontWeight: FontWeight.w300),
+        displaySmall: GoogleFonts.literata(fontSize: 28, fontWeight: FontWeight.w400),
+        headlineLarge: GoogleFonts.literata(fontSize: 24, fontWeight: FontWeight.w500),
+        headlineMedium: GoogleFonts.literata(fontSize: 20, fontWeight: FontWeight.w500),
+        headlineSmall: GoogleFonts.literata(fontSize: 18, fontWeight: FontWeight.w500),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -64,15 +64,15 @@ abstract class AppTheme {
           borderSide: const BorderSide(color: AppColors.ink300),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        labelStyle: GoogleFonts.jost(fontSize: 11, letterSpacing: 1.2, color: AppColors.ink300),
-        hintStyle: GoogleFonts.jost(fontSize: 14, color: AppColors.ink200),
+        labelStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 11, letterSpacing: 1.2, color: AppColors.ink300),
+        hintStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink200),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.ink600,
           foregroundColor: AppColors.parchment50,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: GoogleFonts.jost(fontSize: 13, letterSpacing: 2, fontWeight: FontWeight.w500),
+          textStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, letterSpacing: 2, fontWeight: FontWeight.w500),
           padding: const EdgeInsets.symmetric(vertical: 16),
           elevation: 0,
         ),
@@ -82,7 +82,7 @@ abstract class AppTheme {
           foregroundColor: AppColors.ink500,
           side: const BorderSide(color: AppColors.parchment300),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: GoogleFonts.jost(fontSize: 12, letterSpacing: 1.5),
+          textStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, letterSpacing: 1.5),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
@@ -111,7 +111,7 @@ abstract class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
-          return GoogleFonts.jost(
+          return GoogleFonts.atkinsonHyperlegibleNext(
             fontSize: 11,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             color: selected ? AppColors.forest500 : AppColors.ink300,
@@ -127,7 +127,7 @@ abstract class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 1,
         shadowColor: Colors.black12,
-        titleTextStyle: GoogleFonts.cormorantGaramond(
+        titleTextStyle: GoogleFonts.literata(
           fontSize: 22,
           fontWeight: FontWeight.w500,
           color: AppColors.ink600,

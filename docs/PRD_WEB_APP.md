@@ -234,6 +234,13 @@ Flutter app (`app_colors.dart`).
   `submit-barcode-mapping`, `delete-account`. Data model centers on a **shared
   game catalog** (`shared_games`) with per-user join tables.
 - **Hosting:** Netlify (see `netlify.toml`, `NETLIFY_*` docs).
+- **Privacy policy page:** `public/privacy/index.html`, deployed at `/privacy/`
+  — a separately maintained copy of the same content as the Flutter app's
+  in-app Privacy Policy screen. Both the App Store Connect and Google Play
+  Console listings (mobile PRD §9) link to this URL, so it must be deployed
+  and reachable without login before either store submission. Outstanding
+  work before it's submission-ready is tracked in the cross-platform
+  [`docs/PRIVACY_RELEASE_CHECKLIST.md`](./PRIVACY_RELEASE_CHECKLIST.md).
 
 ---
 

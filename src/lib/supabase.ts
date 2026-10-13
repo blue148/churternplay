@@ -93,10 +93,13 @@ export interface UserLibraryEntryWithStats extends UserLibraryEntry {
 
 export interface Profile {
   id: string;
-  email: string;
+  /** Only present on the signed-in user's own profile. */
+  email?: string;
   username: string;
+  full_name?: string;
   avatar_url?: string;
   bio?: string;
+  phone?: string;
   preferences: {
     theme: 'light' | 'dark';
     notifications_enabled: boolean;

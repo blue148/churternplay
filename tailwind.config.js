@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: ['./app/index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -84,9 +84,9 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+        display: ['Literata', 'Georgia', 'serif'],
         mono:    ['DM Mono', 'monospace'],
-        body:    ['Jost', 'system-ui', 'sans-serif'],
+        body:    ['Atkinson Hyperlegible Next', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '4px',
