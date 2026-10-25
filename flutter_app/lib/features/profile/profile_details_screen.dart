@@ -11,14 +11,14 @@ import '../../data/services/auth_service.dart';
 import '../../providers/auth_provider.dart';
 
 const _presetAvatars = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Max',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Bella',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Felix',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Aneka',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Max',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Sophie',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Charlie',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Luna',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Oliver',
+  'https://api.dicebear.com/7.x/avataaars/png?seed=Bella',
 ];
 
 /// Edits the user's own profile (avatar, username, phone, bio) and password,
