@@ -14,7 +14,19 @@ Securely handles barcode lookups with automatic fallback:
 - **3rd Fallback**: UPCItemDB API
 - Keeps API tokens server-side only
 
-### 3. Delete Account Function
+### 3. Add Game to Library Function
+Adds a game to the calling user's library. `shared_games` writes are
+admin-only under RLS, so this function:
+- Authenticates the caller via their JWT (the user id never comes from the body)
+- Dedupes by `bgg_id`, fetching BGG details server-side when the game is new
+  (clients never supply game data), using the service-role key
+- Inserts the `user_library` row as the caller, so its RLS still applies
+- Returns `{ status: 'added' | 'already_in_library', game }`
+
+### 4. Submit Barcode Mapping Function
+Crowdsources a barcode → BGG id mapping back to GameUPC after a successful match.
+
+### 5. Delete Account Function
 Permanently deletes the calling user's account. A client cannot delete its own
 auth user (that requires the service-role key), so this function:
 - Authenticates the caller via their JWT and derives the user id from it (never
@@ -48,6 +60,9 @@ supabase link --project-ref your-project-ref
 # BGG API token
 supabase secrets set BGG_API_TOKEN=your-bgg-api-token-here
 
+# GameUPC API key (primary barcode lookup + barcode mapping submissions)
+supabase secrets set GAMEUPC_API_KEY=your-gameupc-api-key-here
+
 # BarcodeLookup API token
 supabase secrets set BARCODELOOKUP_API_KEY=your-barcodelookup-api-key-here
 
@@ -55,7 +70,7 @@ supabase secrets set BARCODELOOKUP_API_KEY=your-barcodelookup-api-key-here
 supabase secrets set UPCITEMDB_USER_KEY=your-upcitemdb-key
 supabase secrets set UPCITEMDB_KEY_TYPE=3scale
 
-# Service-role key for the delete-account function (Dashboard > Settings > API).
+# Service-role key for the delete-account and add-game-to-library functions (Dashboard > Settings > API).
 # This is privileged — keep it server-side only, never in the app.
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
@@ -71,6 +86,8 @@ This stores your tokens securely on Supabase's servers. They will NOT be visible
 # Deploy individual functions
 supabase functions deploy bgg-lookup
 supabase functions deploy barcode-lookup
+supabase functions deploy add-game-to-library
+supabase functions deploy submit-barcode-mapping
 supabase functions deploy delete-account
 
 # Or deploy all functions at once
@@ -90,6 +107,7 @@ cp .env.example .env
 
 ```
 BGG_API_TOKEN=your-bgg-api-token-here
+GAMEUPC_API_KEY=your-gameupc-api-key-here
 BARCODELOOKUP_API_KEY=your-barcodelookup-api-key-here
 UPCITEMDB_USER_KEY=your-upcitemdb-key
 UPCITEMDB_KEY_TYPE=3scale

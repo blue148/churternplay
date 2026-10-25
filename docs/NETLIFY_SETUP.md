@@ -98,7 +98,7 @@ After deploying:
 
 ❌ **BGG_API_TOKEN** - Should only be used in Supabase Edge Functions
 ❌ **BARCODELOOKUP_API_KEY** - Should only be used in Supabase Edge Functions
-❌ **UPCGAME_API_KEY** - Should only be used in Supabase Edge Functions
+❌ **GAMEUPC_API_KEY** - Should only be used in Supabase Edge Functions
 ❌ **SUPABASE_SERVICE_ROLE_KEY** - Never expose this (admin access)
 
 ### Edge Functions Handle Secrets
@@ -106,7 +106,7 @@ After deploying:
 All sensitive API keys (BGG, BarcodeLookup, GameUPC) are stored as secrets in Supabase Edge Functions:
 
 - `supabase/functions/bgg-lookup/` - Uses `BGG_API_TOKEN`
-- `supabase/functions/barcode-lookup/` - Uses `BARCODELOOKUP_API_KEY` and `UPCGAME_API_KEY`
+- `supabase/functions/barcode-lookup/` - Uses `BARCODELOOKUP_API_KEY` and `GAMEUPC_API_KEY`
 
 These secrets are set in Supabase dashboard under **Edge Functions** → **Secrets**, not in Netlify.
 

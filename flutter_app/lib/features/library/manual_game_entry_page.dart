@@ -4,23 +4,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../data/models/game.dart';
 import '../../data/services/games_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/library_provider.dart';
 
+/// Route `extra` for `/library/manual-add`.
+class ManualAddArgs {
+  const ManualAddArgs({this.barcode, this.initialQuery});
+
+  /// A scanned barcode no lookup service could match; the saved game keeps it.
+  final String? barcode;
+
+  /// A title read from a box photo; searched as soon as the page opens.
+  final String? initialQuery;
+}
+
 /// Add a game to the library by searching BoardGameGeek by title.
 ///
 /// Mirrors the web app's ManualGameEntry flow: search BGG → pick a result →
-/// fetch full details → de-dupe by bgg_id → upsert into shared_games →
-/// add to the user's library.
+/// fetch full details → add to the user's library (the add-game-to-library
+/// edge function de-dupes by bgg_id and creates the shared_games row).
 ///
 /// [barcode] is optional. When the scanner fails to identify a barcode it can
 /// route here with the scanned value so the resulting game keeps that barcode.
+/// [initialQuery] prefills and runs the search, e.g. with a title read from a
+/// box photo.
 class ManualGameEntryPage extends ConsumerStatefulWidget {
-  const ManualGameEntryPage({super.key, this.barcode});
+  const ManualGameEntryPage({super.key, this.barcode, this.initialQuery});
 
   final String? barcode;
+  final String? initialQuery;
 
   @override
   ConsumerState<ManualGameEntryPage> createState() =>
@@ -38,6 +51,18 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
   List<Map<String, dynamic>> _results = [];
   int? _selectedBggId;
   Map<String, dynamic>? _selectedGame;
+
+  @override
+  void initState() {
+    super.initState();
+    final query = widget.initialQuery?.trim();
+    if (query != null && query.isNotEmpty) {
+      _searchCtrl.text = query;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _search();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -144,29 +169,11 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
     });
 
     try {
-      // De-dupe by BGG id so the same game with different barcodes maps to one
-      // shared_games row.
-      Game? game = await GamesService.getGameByBggId(bggId);
-
-      game ??= await GamesService.upsertSharedGame({
-        // Manual entries have no scanned barcode; generate a stable placeholder
-        // so the unique barcode column is satisfied without colliding.
-        'barcode': widget.barcode ??
-            'MANUAL-$bggId-${DateTime.now().millisecondsSinceEpoch}',
-        'bgg_id': bggId,
-        'name': details['name'],
-        'publisher': details['publisher'],
-        'year': (details['year'] as int?)?.toString(),
-        'cover_image': details['cover_image'],
-        'min_players': details['min_players'],
-        'max_players': details['max_players'],
-        'playtime_minutes': details['playtime_minutes'],
-        'game_type': details['game_type'] ?? [],
-        'game_category': details['game_category'] ?? [],
-        'game_mechanic': details['game_mechanic'] ?? [],
-      });
-
-      await GamesService.addGameToLibrary(user.id, game.id);
+      final result = await GamesService.addGameToLibraryFromBgg(
+        bggId: bggId,
+        barcode: widget.barcode,
+      );
+      final game = result.game;
       await ref.read(libraryProvider.notifier).refresh();
 
       // Crowdsource the barcode → BGG mapping when we have a real barcode.
@@ -179,7 +186,9 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${game.name} added to your library',
+            result.alreadyInLibrary
+                ? '${game.name} is already in your library'
+                : '${game.name} added to your library',
             style: GoogleFonts.atkinsonHyperlegibleNext(),
           ),
           backgroundColor: AppColors.forest500,
@@ -214,6 +223,8 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           if (widget.barcode != null) _barcodeNotice(),
+          if (widget.initialQuery != null && widget.barcode == null)
+            _photoNotice(),
           if (_selectedGame == null) _searchField(),
           if (_error != null) _errorBox(_error!),
           if (_loadingDetails) _loadingDetailsRow(),
@@ -237,7 +248,10 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "We couldn't match that barcode. Search for the game below.",
+            widget.initialQuery != null
+                ? 'That barcode looks like “${widget.initialQuery}”. Pick the '
+                    'matching game below, or edit the search.'
+                : "We couldn't match that barcode. Search for the game below.",
             style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400),
           ),
           const SizedBox(height: 4),
@@ -249,6 +263,23 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
                 fontWeight: FontWeight.w600),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _photoNotice() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.wheat100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.wheat200),
+      ),
+      child: Text(
+        'Matches for the title we read from your photo. Edit the search if '
+        "it's not quite right.",
+        style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400),
       ),
     );
   }

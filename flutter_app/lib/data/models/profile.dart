@@ -63,7 +63,7 @@ class AppProfile {
         id: json['id'] as String,
         email: json['email'] as String?,
         username: json['username'] as String,
-        avatarUrl: json['avatar_url'] as String?,
+        avatarUrl: displayableAvatarUrl(json['avatar_url'] as String?),
         bio: json['bio'] as String?,
         phone: json['phone'] as String?,
         preferences: ProfilePreferences.fromJson(
@@ -74,4 +74,12 @@ class AppProfile {
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
       );
+}
+
+/// Flutter can't render SVG network images, and the preset avatars were
+/// originally saved as DiceBear SVG URLs. DiceBear serves the same avatar as
+/// PNG, so swap the format for those.
+String? displayableAvatarUrl(String? url) {
+  if (url == null || !url.startsWith('https://api.dicebear.com/')) return url;
+  return url.replaceFirst(RegExp(r'/svg(?=\?|$)'), '/png');
 }

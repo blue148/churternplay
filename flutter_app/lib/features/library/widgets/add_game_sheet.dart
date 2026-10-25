@@ -33,11 +33,11 @@ void showAddGameSheet(BuildContext context) {
           ),
           ListTile(
             leading:
-                const Icon(Icons.qr_code_scanner, color: AppColors.clay400),
-            title: Text('Scan barcode',
+                const Icon(Icons.photo_camera_outlined, color: AppColors.clay400),
+            title: Text('Scan title or barcode',
                 style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontWeight: FontWeight.w600, color: AppColors.ink500)),
-            subtitle: Text('Use your camera to scan a game',
+            subtitle: Text('Snap the box or scan its barcode',
                 style: GoogleFonts.atkinsonHyperlegibleNext(
                     fontSize: 12, color: AppColors.ink300)),
             onTap: () {
