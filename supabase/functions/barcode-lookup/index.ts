@@ -25,6 +25,12 @@ interface BarcodeLookupRequest {
 }
 
 interface GameUpcResponse {
+  name?: string;
+  // GameUPC's own product-name lookup for the barcode.
+  searched_for?: string;
+  // 'verified' when the barcode → BGG mapping is confirmed; otherwise (e.g.
+  // 'choose_from_bgg_info_or_search') bgg_info is just a list of guesses.
+  bgg_info_status?: string;
   bgg_info?: Array<{
     id?: number;
     name: string;
@@ -76,7 +82,10 @@ serve(async (req: Request) => {
     { global: { headers: { Authorization: authHeader } } }
   );
 
-  const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+  // Pass the JWT explicitly: without a session, newer auth-js versions
+  // ignore the global Authorization header and return AuthSessionMissingError.
+  const jwt = authHeader.replace(/^Bearer\s+/i, '');
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt);
   if (authError || !user) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
@@ -123,6 +132,11 @@ serve(async (req: Request) => {
       );
 
     const tryGameUpc = async () => {
+      if (!GAMEUPC_API_KEY) {
+        console.warn('GAMEUPC_API_KEY not configured, skipping GameUPC');
+        return null;
+      }
+
       try {
         console.log('Trying GameUPC...');
         const gameUpcResponse = await fetch(`https://api.gameupc.com/v1/upc/${barcode}`, {
@@ -133,19 +147,31 @@ serve(async (req: Request) => {
 
         if (gameUpcResponse.ok) {
           const result: GameUpcResponse = await gameUpcResponse.json();
-          const gameMatch = result.bgg_info?.[0];
-          const name = gameMatch?.name?.trim();
 
-          if (isNonEmptyString(name)) {
-            console.log(`GameUPC success: ${name}`);
-            return respondOk({
-              source: 'gameupc',
-              bgg_id: gameMatch?.id || undefined,
-              name,
-            });
+          if (result.bgg_info_status === 'verified') {
+            const gameMatch = result.bgg_info?.[0];
+            const name = gameMatch?.name?.trim();
+            if (isNonEmptyString(name)) {
+              console.log(`GameUPC verified match: ${name}`);
+              return respondOk({
+                source: 'gameupc',
+                bgg_id: gameMatch?.id || undefined,
+                name,
+              });
+            }
+          } else {
+            // Unverified: the BGG candidates are guesses (a soda bottle comes
+            // back as "UNO"), so return only the product name and no bgg_id —
+            // the app then has the user pick the game.
+            const name = (result.searched_for ?? result.name)?.trim();
+            if (isNonEmptyString(name)) {
+              console.log(`GameUPC unverified (${result.bgg_info_status}): ${name}`);
+              return respondOk({ source: 'gameupc', name });
+            }
           }
         } else {
-          console.error('GameUPC API error:', gameUpcResponse.status);
+          // Log the body too so an expired or invalid key is obvious.
+          console.error('GameUPC API error:', gameUpcResponse.status, await gameUpcResponse.text());
         }
 
         console.log('GameUPC returned empty title or no results, trying fallback...');

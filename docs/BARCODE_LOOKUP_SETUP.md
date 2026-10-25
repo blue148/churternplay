@@ -89,9 +89,10 @@ const gameData = await lookupBarcodeWithBgg('123456789012');
 ## API Keys
 
 ### GameUPC
-- **Status**: Built-in test key (already configured)
-- **Rate Limit**: Test key has limited usage
-- **Upgrade**: Get production key at https://gameupc.com
+- **Secret**: `GAMEUPC_API_KEY` (Supabase edge-function secret, used by `barcode-lookup` and `submit-barcode-mapping`)
+- **Set it**: `supabase secrets set GAMEUPC_API_KEY=your-gameupc-api-key`
+- **Token**: Request a production key at https://gameupc.com
+- If the secret is missing, `barcode-lookup` skips GameUPC (logs a warning) and falls back to BarcodeLookup / UPCItemDB
 
 ### BarcodeLookup
 - **Token**: Get your API key at https://www.barcodelookup.com
@@ -181,7 +182,7 @@ lookupBarcodeWithBgg('644216627775')
 
 1. **Monitor Usage**:
    - Check which service is used more often
-   - Consider upgrading GameUPC to production key if test key is limiting
+   - Watch GameUPC error logs for an expired or rate-limited key
 
 2. **Add Caching**:
    - Cache barcode → game mappings in Supabase database

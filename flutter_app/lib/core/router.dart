@@ -146,10 +146,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
                 GoRoute(
                   path: 'manual-add',
-                  pageBuilder: (_, state) => MaterialPage(
-                    fullscreenDialog: true,
-                    child: ManualGameEntryPage(barcode: state.extra as String?),
-                  ),
+                  pageBuilder: (_, state) {
+                    final args = state.extra as ManualAddArgs?;
+                    return MaterialPage(
+                      fullscreenDialog: true,
+                      child: ManualGameEntryPage(
+                        barcode: args?.barcode,
+                        initialQuery: args?.initialQuery,
+                      ),
+                    );
+                  },
                 ),
                 GoRoute(
                   path: 'friend/:friendId',

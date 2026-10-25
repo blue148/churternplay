@@ -67,3 +67,9 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // On-device OCR for the box-title scanner (bundled Latin model, no Play
+    // Services download). Called from MainActivity's text_recognition channel.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+}

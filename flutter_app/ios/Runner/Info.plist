@@ -40,9 +40,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Churntern Play uses your camera to scan game barcodes.</string>
+	<string>Churntern Play uses your camera to scan game barcodes and photograph game boxes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Churntern Play uses your photo library to set a profile picture.</string>
+	<string>Churntern Play uses your photo library to set a profile picture and to identify games from photos of their boxes.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

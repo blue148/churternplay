@@ -1,3 +1,5 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../core/supabase_client.dart';
 import '../models/game.dart';
 import '../models/library_entry.dart';
@@ -74,21 +76,46 @@ abstract class GamesService {
     return data == null ? null : Game.fromJson(data);
   }
 
-  static Future<Game> upsertSharedGame(Map<String, dynamic> game) async {
-    final data = await supabase
-        .from('shared_games')
-        .upsert(game, onConflict: 'barcode')
-        .select()
-        .single();
-    return Game.fromJson(data);
-  }
-
   // ── Edge function calls ────────────────────────────────────────────────────
 
+  /// Returns null when no lookup service recognises the barcode.
   static Future<Map<String, dynamic>?> lookupBarcode(String barcode) async {
-    final response = await supabase.functions
-        .invoke('barcode-lookup', body: {'barcode': barcode});
-    return response.data as Map<String, dynamic>?;
+    try {
+      final response = await supabase.functions
+          .invoke('barcode-lookup', body: {'barcode': barcode});
+      return response.data as Map<String, dynamic>?;
+    } on FunctionException catch (e) {
+      if (e.status == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Adds a game to the signed-in user's library via the
+  /// `add-game-to-library` edge function, which creates the shared_games row
+  /// server-side (shared_games writes are admin-only).
+  ///
+  /// Pass [bggId] (plus [barcode] when one was scanned), or — when a barcode
+  /// lookup found a name but no BGG match — [barcode] and [name].
+  static Future<AddGameResult> addGameToLibraryFromBgg({
+    int? bggId,
+    String? barcode,
+    String? name,
+    String? publisher,
+  }) async {
+    final response = await supabase.functions.invoke(
+      'add-game-to-library',
+      body: {
+        if (bggId != null) 'bggId': bggId,
+        if (barcode != null) 'barcode': barcode,
+        if (name != null) 'name': name,
+        if (publisher != null) 'publisher': publisher,
+      },
+    );
+    final data = response.data as Map<String, dynamic>;
+    return AddGameResult(
+      game: Game.fromJson(data['game'] as Map<String, dynamic>),
+      alreadyInLibrary: data['status'] == 'already_in_library',
+    );
   }
 
   static Future<Map<String, dynamic>?> lookupBggById(int bggId) async {
@@ -150,4 +177,11 @@ abstract class GamesService {
         .eq('user_id', userId)
         .eq('game_id', gameId);
   }
+}
+
+class AddGameResult {
+  const AddGameResult({required this.game, required this.alreadyInLibrary});
+
+  final Game game;
+  final bool alreadyInLibrary;
 }

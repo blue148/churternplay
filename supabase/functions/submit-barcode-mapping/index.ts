@@ -42,7 +42,10 @@ serve(async (req) => {
     { global: { headers: { Authorization: authHeader } } }
   );
 
-  const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+  // Pass the JWT explicitly: without a session, newer auth-js versions
+  // ignore the global Authorization header and return AuthSessionMissingError.
+  const jwt = authHeader.replace(/^Bearer\s+/i, '');
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt);
   if (authError || !user) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
