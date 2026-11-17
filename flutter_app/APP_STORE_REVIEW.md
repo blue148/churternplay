@@ -24,7 +24,7 @@ Updated 2026-09-22.
 >   `1` in `project.pbxproj`, and the now-unused
 >   `UISupportedInterfaceOrientations~ipad` key removed from `Info.plist`.
 > - App identity (#5) — DONE. Real reverse-DNS bundle ID:
->   `com.churternplay.churternPlay`. "Churntern Play" confirmed as the single
+>   `com.churternplay.churternPlay`. "Churtern Play" confirmed as the single
 >   product name; fixed the two remaining "The Catalogue" strings
 >   (`auth_screen.dart` wordmark, `beta_disclaimer_dialog.dart` copy) to match.
 > - Privacy policy is now shown in-app (`PrivacyPolicyScreen` + beta disclaimer
@@ -116,7 +116,7 @@ only uses standard HTTPS via Supabase).
 
 ## 5. Placeholder app identity — Guideline 2.3 (metadata) — DONE
 
-"Churntern Play" confirmed as the single product name. Real reverse-DNS bundle ID
+"Churtern Play" confirmed as the single product name. Real reverse-DNS bundle ID
 set (`com.churternplay.churternPlay`). Fixed the two lingering "The Catalogue"
 strings in `auth_screen.dart` (wordmark) and `beta_disclaimer_dialog.dart` (copy)
 so in-app branding, display name, and bundle ID all agree.

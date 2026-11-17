@@ -4,11 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shake_gesture_platform_interface/shake_gesture_platform_interface.dart';
 
-import 'package:churntern_play/data/services/friend_suggestions_service.dart';
-import 'package:churntern_play/data/services/recent_players_service.dart';
-import 'package:churntern_play/features/game_nite/game_nite_screen.dart';
-import 'package:churntern_play/providers/friend_suggestions_provider.dart';
-import 'package:churntern_play/providers/recent_players_provider.dart';
+import 'package:churtern_play/data/services/friend_suggestions_service.dart';
+import 'package:churtern_play/data/services/recent_players_service.dart';
+import 'package:churtern_play/features/game_nite/game_nite_screen.dart';
+import 'package:churtern_play/providers/friend_suggestions_provider.dart';
+import 'package:churtern_play/providers/recent_players_provider.dart';
 
 /// In-memory stand-in for the Supabase-backed recents store, mirroring its
 /// most-recent-first, case-insensitive-dedupe behaviour.

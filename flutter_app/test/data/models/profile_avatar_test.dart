@@ -1,4 +1,4 @@
-import 'package:churntern_play/data/models/profile.dart';
+import 'package:churtern_play/data/models/profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

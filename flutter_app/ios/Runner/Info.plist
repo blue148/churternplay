@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Churntern Play</string>
+	<string>Churtern Play</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>churntern_play</string>
+	<string>churtern_play</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -40,9 +40,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Churntern Play uses your camera to scan game barcodes and photograph game boxes.</string>
+	<string>Churtern Play uses your camera to scan game barcodes and photograph game boxes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Churntern Play uses your photo library to set a profile picture and to identify games from photos of their boxes.</string>
+	<string>Churtern Play uses your photo library to set a profile picture and to identify games from photos of their boxes.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

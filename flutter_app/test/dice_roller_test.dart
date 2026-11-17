@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shake_gesture_platform_interface/shake_gesture_platform_interface.dart';
 
-import 'package:churntern_play/features/game_nite/dice_roller_page.dart';
+import 'package:churtern_play/features/game_nite/dice_roller_page.dart';
 
 void main() {
   Future<void> pumpPage(WidgetTester tester) async {

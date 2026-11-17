@@ -41,7 +41,7 @@ Future<void> showBetaDisclaimerDialog(BuildContext context) {
               ),
               const SizedBox(height: 16),
               Text(
-                "You're using a pre-release beta version of Churntern Play, "
+                "You're using a pre-release beta version of Churtern Play, "
                 'distributed through TestFlight / Google Play testing to a '
                 'limited group of invited testers. By continuing you '
                 'acknowledge:',

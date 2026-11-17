@@ -1,4 +1,4 @@
-# churntern_play
+# churtern_play
 
 A new Flutter project.
 

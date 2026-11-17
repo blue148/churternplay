@@ -25,7 +25,7 @@ power stats.
   barcode databases) are proxied through Edge Functions so API tokens stay server-side.
 
 > ⚠️ **Open branding decision.** Product identity is inconsistent across surfaces
-> ("Libre Ludorum" / "Churtern•Play" / "The Catalogue" / "Churntern Play" on
+> ("Libre Ludorum" / "Churtern•Play" / "The Catalogue" / "Churtern Play" on
 > mobile). A single product name, wordmark, and bundle identity should be decided
 > and applied across both apps. Tracked as a launch blocker on mobile
 > (see Flutter PRD §8).

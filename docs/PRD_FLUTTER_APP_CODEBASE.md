@@ -19,7 +19,7 @@ tools at the table (randomizers, timers, dice) without reaching for multiple
 apps.
 
 The app is branded "The Catalogue" at the auth screen. The Dart package is named
-`churntern_play` and the iOS display name is "Churntern Play." These three
+`churtern_play` and the iOS display name is "Churtern Play." These three
 identities are inconsistent; the codebase does not resolve this.
 
 ---

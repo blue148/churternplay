@@ -1,4 +1,4 @@
-import 'package:churntern_play/features/scanner/retail_title.dart';
+import 'package:churtern_play/features/scanner/retail_title.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

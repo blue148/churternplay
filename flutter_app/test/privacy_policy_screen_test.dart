@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:churntern_play/features/privacy/privacy_policy_screen.dart';
+import 'package:churtern_play/features/privacy/privacy_policy_screen.dart';
 
 void main() {
   testWidgets('privacy policy shows core disclosures', (tester) async {

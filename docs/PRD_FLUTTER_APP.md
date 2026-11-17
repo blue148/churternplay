@@ -17,8 +17,8 @@ game, pulling up your (or a friend's) collection, and running the "Game Nite"
 tools during play — including mobile-native touches like **shake-to-roll dice**
 and **shake-to-pick-first-player**.
 
-- **Package / display identity:** Dart package `churntern_play`; iOS display name
-  "Churntern Play"; auth-screen branding "The Catalogue".
+- **Package / display identity:** Dart package `churtern_play`; iOS display name
+  "Churtern Play"; auth-screen branding "The Catalogue".
 - **Backend:** Same Supabase project as web (Auth, Postgres + RLS, Storage, Edge
   Functions). The app authenticates with `supabase_flutter` and reads/writes the
   same tables, so a user's catalogue, wishlist, sessions, and friends are shared

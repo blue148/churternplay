@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.churntern_play" "\0"
-            VALUE "FileDescription", "churntern_play" "\0"
+            VALUE "CompanyName", "com.churtern_play" "\0"
+            VALUE "FileDescription", "churtern_play" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "churntern_play" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.churntern_play. All rights reserved." "\0"
-            VALUE "OriginalFilename", "churntern_play.exe" "\0"
-            VALUE "ProductName", "churntern_play" "\0"
+            VALUE "InternalName", "churtern_play" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.churtern_play. All rights reserved." "\0"
+            VALUE "OriginalFilename", "churtern_play.exe" "\0"
+            VALUE "ProductName", "churtern_play" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

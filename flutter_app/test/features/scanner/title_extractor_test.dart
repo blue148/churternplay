@@ -1,5 +1,5 @@
-import 'package:churntern_play/data/services/text_recognition_service.dart';
-import 'package:churntern_play/features/scanner/title_extractor.dart';
+import 'package:churtern_play/data/services/text_recognition_service.dart';
+import 'package:churtern_play/features/scanner/title_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 OcrLine line(String text,

@@ -1,6 +1,6 @@
 {
-    "name": "churntern_play",
-    "short_name": "churntern_play",
+    "name": "churtern_play",
+    "short_name": "churtern_play",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

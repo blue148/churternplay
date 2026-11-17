@@ -107,7 +107,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Churntern Play',
+                        'Churtern Play',
                         style: GoogleFonts.literata(
                           fontSize: 32,
                           fontWeight: FontWeight.w300,
