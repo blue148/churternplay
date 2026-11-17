@@ -22,6 +22,14 @@
 - Phase 1 (`friend_library_screen.dart`): committed in `694ec89`. Verified only by `flutter analyze`, `flutter test` and code review, with no interactive Simulator check.
 - Phase 2 (Add to Wishlist from a friend's library): not started. No wishlist code in `friends_service.dart`.
 
+## Game details backlog (not started; noted 2026-10-25)
+Screen: `flutter_app/lib/features/library/game_detail_screen.dart`.
+- **BGG rank.** Not stored. The `/thing?stats=1` response we already fetch has it (`<rank type="subtype" name="boardgame" value="…">`; the value is "Not Ranked" for unranked games). Parse it in `supabase/functions/_shared/bgg.ts`, add a `shared_games.bgg_rank` column, save it in `add-game-to-library`, and show it in `_StatsRow`. Ranks drift, so plan a refresh (e.g. on detail view if older than N days) and backfill existing rows.
+- **Age range.** BGG only provides a minimum age (`minage`, shown as "10+"); there's no maximum. It's already parsed as `min_age` but never saved. Add a `shared_games.min_age` column, save it, backfill, and show it in `_StatsRow`. A fuller range would need BGG's community "suggested player age" poll.
+- **Trim game mechanics.** `_TagsSection` dumps type + category + mechanic + family into one chip wall, and BGG family tags are especially noisy. Ideas: lead with the curated `game_type`, show categories and the first few mechanics with a "show all" toggle, and drop families (or put them behind the toggle).
+- **Custom per-user stats.** Open question: what should users be able to track? Examples: personal rating, house rules, custom score fields, per-game counters. Per-user data belongs on `user_library`, or a new table if it's arbitrary key/value.
+- **Update avatars.** Improve the preset avatars in `flutter_app/lib/features/profile/profile_details_screen.dart` (`_presetAvatars`, currently 8 DiceBear `avataaars` PNGs). Pick a style that matches the app's look, offer more variety, or bundle them as assets instead of loading them from DiceBear.
+
 ## Working notes
 - Ask before running `supabase db push` or any live auth.users reads or writes.
 - Simulator UI automation: synthetic taps (cliclick/osascript) do not reach the Simulator. Use `xcrun simctl io booted screenshot`, code review and tests, or tap through manually.
