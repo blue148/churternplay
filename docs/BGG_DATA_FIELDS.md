@@ -13,6 +13,7 @@ The BGG (BoardGameGeek) XML API provides rich metadata about board games. Here's
 | `name` | string | Primary game name | "Gloomhaven" |
 | `year` | number | Year published | 2017 |
 | `publisher` | string | Primary publisher | "Cephalofair Games" |
+| `designers` | string[] | Designers (`boardgamedesigner` links; "(Uncredited)" dropped). Saved to `shared_games.designers` | ["Isaac Childres"] |
 | `cover_image` | string | URL to game cover art | "https://cf.geekdo-images.com/..." |
 | `bgg_id` | number | BoardGameGeek ID | 174430 |
 

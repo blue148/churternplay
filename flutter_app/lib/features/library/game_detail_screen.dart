@@ -2,10 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
+import 'widgets/move_to_wishlist.dart';
+import 'widgets/rating_row.dart';
 import '../../data/models/game.dart';
 import '../../data/models/library_entry.dart';
 import '../../data/models/victory_stats.dart';
@@ -41,7 +43,7 @@ class GameDetailScreen extends ConsumerWidget {
         appBar: AppBar(),
         body: Center(
           child: Text('Game not found',
-              style: GoogleFonts.literata(
+              style: AppFonts.serif(
                   fontSize: 22, color: AppColors.ink300)),
         ),
       );
@@ -76,6 +78,8 @@ class GameDetailScreen extends ConsumerWidget {
                     liveEntry.forSale ? 'Remove from sale' : 'Mark for sale'),
               ),
               const PopupMenuItem(
+                  value: 'to_wishlist', child: Text('Move to Wishlist')),
+              const PopupMenuItem(
                   value: 'delete', child: Text('Remove from library')),
             ],
             onSelected: (action) {
@@ -86,6 +90,11 @@ class GameDetailScreen extends ConsumerWidget {
                   ref
                       .read(libraryProvider.notifier)
                       .toggleForSale(liveEntry.id, !liveEntry.forSale);
+                case 'to_wishlist':
+                  confirmAndMoveToWishlist(context, ref, liveEntry)
+                      .then((moved) {
+                    if (moved && context.mounted) context.pop();
+                  });
                 case 'delete':
                   _confirmDelete(context, ref, liveEntry);
               }
@@ -101,6 +110,8 @@ class GameDetailScreen extends ConsumerWidget {
           _TitleBlock(entry: liveEntry),
           const SizedBox(height: 16),
           _StatsRow(entry: liveEntry),
+          const SizedBox(height: 20),
+          _RatingsSection(entry: liveEntry),
           if (liveEntry.hasVictoryStats) ...[
             const SizedBox(height: 24),
             _VictorySection(stats: liveEntry.victoryStats!),
@@ -138,7 +149,7 @@ class GameDetailScreen extends ConsumerWidget {
               icon: const Icon(Icons.add_circle_outline, size: 18),
               label: Text(
                 'Log Play',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Colors.white),
@@ -155,10 +166,10 @@ class GameDetailScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Remove game?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text(
           'Remove "${entry.game.name}" from your library?',
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink400),
         ),
         actions: [
           TextButton(
@@ -172,7 +183,7 @@ class GameDetailScreen extends ConsumerWidget {
               context.pop();
             },
             child: Text('Remove',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -222,7 +233,7 @@ class _CoverHeader extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   color: AppColors.forest600,
                   child: Text('FOR SALE',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 10, color: Colors.white, letterSpacing: 1)),
                 ),
               ),
@@ -243,7 +254,6 @@ class _TitleBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final game = entry.game;
     final subtitleParts = [
-      if (game.publisher != null && game.publisher!.isNotEmpty) game.publisher!,
       if (game.year != null && game.year!.isNotEmpty) game.year!,
       if (game.edition != null && game.edition!.isNotEmpty) game.edition!,
     ];
@@ -256,7 +266,7 @@ class _TitleBlock extends StatelessWidget {
             Expanded(
               child: Text(
                 game.name,
-                style: GoogleFonts.literata(
+                style: AppFonts.serif(
                     fontSize: 26,
                     fontWeight: FontWeight.w500,
                     color: AppColors.ink600),
@@ -272,17 +282,75 @@ class _TitleBlock extends StatelessWidget {
                 ),
                 child: Text('EXPANSION',
                     style:
-                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 9, color: AppColors.ink300)),
+                        AppFonts.sans(fontSize: 9, color: AppColors.ink300)),
               ),
           ],
         ),
+        if (game.designers.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          _CreditLine(label: 'Designer', value: game.designerLabel),
+        ],
+        if (game.publisher != null && game.publisher!.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          _CreditLine(label: 'Publisher', value: game.publisher!),
+        ],
         if (subtitleParts.isNotEmpty) ...[
           const SizedBox(height: 4),
           Text(
             subtitleParts.join(' · '),
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink300),
+            style: AppFonts.sans(fontSize: 13, color: AppColors.ink300),
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _CreditLine extends StatelessWidget {
+  final String label;
+  final String value;
+  const _CreditLine({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(children: [
+        TextSpan(
+            text: '$label  ',
+            style: AppTextStyles.body(
+                size: 12, weight: FontWeight.w600, color: AppColors.ink300)),
+        TextSpan(
+            text: value,
+            style: AppTextStyles.body(size: 14, color: AppColors.ink500)),
+      ]),
+    );
+  }
+}
+
+// ── Ratings ───────────────────────────────────────────────────────────────────
+
+class _RatingsSection extends ConsumerWidget {
+  final LibraryEntry entry;
+  const _RatingsSection({required this.entry});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(libraryProvider.notifier);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('YOUR RATINGS', style: AppTextStyles.label()),
+        const SizedBox(height: 4),
+        RatingRow(
+          kind: RatingKind.hearts,
+          value: entry.heartRating,
+          onChanged: (v) => notifier.setHearts(entry.id, v),
+        ),
+        RatingRow(
+          kind: RatingKind.fists,
+          value: entry.punchRating,
+          onChanged: (v) => notifier.setPunch(entry.id, v),
+        ),
       ],
     );
   }
@@ -320,7 +388,7 @@ class _StatsRow extends StatelessWidget {
               const SizedBox(width: 5),
               Text(label,
                   style:
-                      GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400)),
+                      AppFonts.sans(fontSize: 13, color: AppColors.ink400)),
             ],
           ),
       ],
@@ -359,7 +427,7 @@ class _VictorySection extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Last played ${DateFormat('MMM d, yyyy').format(lastPlayed)}',
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink300),
+            style: AppFonts.sans(fontSize: 12, color: AppColors.ink300),
           ),
         ],
       ],
@@ -386,11 +454,11 @@ class _StatTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value,
-                style: GoogleFonts.literata(
+                style: AppFonts.serif(
                     fontSize: 24, color: AppColors.ink600)),
             const SizedBox(height: 2),
             Text(label,
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 9, letterSpacing: 1.0, color: AppColors.ink300)),
           ],
         ),
@@ -432,7 +500,7 @@ class _TagsSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(tag,
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 11, color: AppColors.ink400)),
               ),
           ],
@@ -464,7 +532,7 @@ class _NotesSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(notes,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 13, color: AppColors.ink500, height: 1.4)),
         ),
       ],
@@ -495,14 +563,14 @@ class _PlayHistorySection extends StatelessWidget {
                   const Icon(Icons.circle, size: 6, color: AppColors.clay400),
                   const SizedBox(width: 10),
                   Text(DateFormat('EEEE, MMM d, yyyy').format(d),
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 13, color: AppColors.ink400)),
                 ],
               ),
             )),
         if (sorted.length > recent.length)
           Text('+ ${sorted.length - recent.length} more',
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink200)),
+              style: AppFonts.sans(fontSize: 12, color: AppColors.ink200)),
       ],
     );
   }
@@ -517,7 +585,7 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         text.toUpperCase(),
-        style: GoogleFonts.atkinsonHyperlegibleNext(
+        style: AppFonts.sans(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.2,

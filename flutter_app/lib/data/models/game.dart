@@ -4,6 +4,7 @@ class Game {
   final String name;
   final int? bggId;
   final String? publisher;
+  final List<String> designers;
   final String? year;
   final String? edition;
   final String? coverImage;
@@ -24,6 +25,7 @@ class Game {
     required this.name,
     this.bggId,
     this.publisher,
+    this.designers = const [],
     this.year,
     this.edition,
     this.coverImage,
@@ -45,6 +47,7 @@ class Game {
         name: json['name'] as String,
         bggId: json['bgg_id'] as int?,
         publisher: json['publisher'] as String?,
+        designers: _strings(json['designers']),
         year: json['year'] as String?,
         edition: json['edition'] as String?,
         coverImage: json['cover_image'] as String?,
@@ -66,6 +69,7 @@ class Game {
         'name': name,
         'bgg_id': bggId,
         'publisher': publisher,
+        'designers': designers,
         'year': year,
         'edition': edition,
         'cover_image': coverImage,
@@ -78,6 +82,12 @@ class Game {
         'playtime_minutes': playtimeMinutes,
         'is_expansion': isExpansion,
       };
+
+  /// Designers joined for display, e.g. "Uwe Rosenberg, Grzegorz Kobiela".
+  String get designerLabel => designers.join(', ');
+
+  /// First designer, used for sorting. Empty when unknown.
+  String get primaryDesigner => designers.isEmpty ? '' : designers.first;
 
   String get playerCountLabel {
     if (minPlayers == null && maxPlayers == null) return '';

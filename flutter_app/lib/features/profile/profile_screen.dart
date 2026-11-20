@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_service.dart';
@@ -50,7 +50,7 @@ class ProfileScreen extends ConsumerWidget {
                           (profile?.username ?? user?.email ?? 'U')
                               .substring(0, 1)
                               .toUpperCase(),
-                          style: GoogleFonts.literata(
+                          style: AppFonts.serif(
                             fontSize: 32,
                             color: AppColors.forest500,
                           ),
@@ -60,7 +60,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(
                   profile?.username ?? user?.email ?? '',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                     fontSize: 26,
                     color: AppColors.ink600,
                   ),
@@ -70,7 +70,7 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     profile!.bio!,
                     style:
-                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink300),
+                        AppFonts.sans(fontSize: 13, color: AppColors.ink300),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -147,9 +147,9 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Sign out?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text('You will need to sign in again to access your library.',
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400)),
+            style: AppFonts.sans(fontSize: 14, color: AppColors.ink400)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -161,7 +161,7 @@ class ProfileScreen extends ConsumerWidget {
               await AuthService.signOut();
             },
             child: Text('Sign Out',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -229,7 +229,7 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
             const SizedBox(height: 12),
             Text(
               'Delete account?',
-              style: GoogleFonts.literata(
+              style: AppFonts.serif(
                   fontSize: 24, color: AppColors.ink600),
             ),
             const SizedBox(height: 12),
@@ -237,7 +237,7 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
               'This permanently deletes your account and cannot be undone. '
               'Your profile, library, wishlist, game sessions, and friends '
               'will all be removed.',
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
+              style: AppFonts.sans(fontSize: 14, color: AppColors.ink400),
               textAlign: TextAlign.center,
             ),
             if (_error != null) ...[
@@ -253,7 +253,7 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
                 child: Text(
                   _error!,
                   style:
-                      GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.clay600),
+                      AppFonts.sans(fontSize: 13, color: AppColors.clay600),
                 ),
               ),
             ],
@@ -304,10 +304,10 @@ class _Stat extends StatelessWidget {
     return Column(
       children: [
         Text(value,
-            style: GoogleFonts.literata(
+            style: AppFonts.serif(
                 fontSize: 28, color: AppColors.ink600)),
         Text(label,
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 11, color: AppColors.ink300)),
+            style: AppFonts.sans(fontSize: 11, color: AppColors.ink300)),
       ],
     );
   }
@@ -332,7 +332,7 @@ class _MenuItem extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 0),
       leading: Icon(icon, color: c, size: 22),
-      title: Text(label, style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 15, color: c)),
+      title: Text(label, style: AppFonts.sans(fontSize: 15, color: c)),
       trailing: color == null
           ? const Icon(Icons.chevron_right, color: AppColors.ink200)
           : null,

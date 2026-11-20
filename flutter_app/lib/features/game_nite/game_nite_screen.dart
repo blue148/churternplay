@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 import 'package:shake_gesture/shake_gesture.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -73,6 +73,14 @@ class GameNiteScreen extends StatelessWidget {
             subtitle: 'Build a dice pool, then roll or shake',
             onTap: () => context.push('/game-nite/dice-roller'),
           ),
+          _ToolRow(
+            icon: Icons.calculate_outlined,
+            iconBg: AppColors.plum50,
+            iconColor: AppColors.plum400,
+            title: 'Score Calculator',
+            subtitle: 'Add up points and keep each player\'s total',
+            onTap: () => context.push('/game-nite/score-calculator'),
+          ),
         ],
       ),
     );
@@ -113,12 +121,12 @@ class _ToolRow extends StatelessWidget {
             child: Icon(icon, color: iconColor, size: 22),
           ),
           title: Text(title,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: AppColors.ink600)),
           subtitle: Text(subtitle,
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink300)),
+              style: AppFonts.sans(fontSize: 12, color: AppColors.ink300)),
           trailing: const Icon(Icons.chevron_right,
               color: AppColors.ink200, size: 20),
           onTap: onTap,
@@ -479,7 +487,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                   const Icon(Icons.tune, size: 18, color: AppColors.ink400),
                   const SizedBox(width: 10),
                   Text('Game Criteria',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: AppColors.ink600)),
@@ -493,7 +501,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text('$_activeFilterCount',
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: AppColors.forest600)),
@@ -502,7 +510,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                   const Spacer(),
                   Text(
                       '$filteredCount ${filteredCount == 1 ? 'game' : 'games'}',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 12, color: AppColors.ink300)),
                   const SizedBox(width: 6),
                   Icon(
@@ -569,7 +577,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                     size: 16, color: AppColors.wheat400),
                 const SizedBox(width: 8),
                 Text('VICTORY INTELLIGENCE',
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 11,
                         letterSpacing: 1.2,
                         fontWeight: FontWeight.w500,
@@ -637,7 +645,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
       selected: selected,
       onSelected: (_) => _selectSource(ownerId),
       showCheckmark: false,
-      labelStyle: GoogleFonts.atkinsonHyperlegibleNext(
+      labelStyle: AppFonts.sans(
         fontSize: 13,
         color: selected ? AppColors.cream : AppColors.ink500,
         fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
@@ -655,7 +663,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
           Icon(icon, size: 16, color: AppColors.ink400),
           const SizedBox(width: 6),
           Text(text,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppColors.ink500)),
@@ -664,7 +672,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
 
   InputDecoration _fieldDecoration({String? hint}) => InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink200),
+        hintStyle: AppFonts.sans(fontSize: 14, color: AppColors.ink200),
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -715,7 +723,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                 child: Text(
                   value?.toString() ?? 'Any',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                     fontSize: 14,
                     color: value == null ? AppColors.ink200 : AppColors.ink600,
                   ),
@@ -792,7 +800,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                 children: [
                   Expanded(
                     child: Text(current.label,
-                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                        style: AppFonts.sans(
                             fontSize: 14,
                             color: value == null || value == ''
                                 ? AppColors.ink400
@@ -809,7 +817,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
             initialValue: value,
             isExpanded: true,
             decoration: _fieldDecoration(),
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink600),
+            style: AppFonts.sans(fontSize: 14, color: AppColors.ink600),
             items: [
               for (final it in items)
                 DropdownMenuItem(value: it.value, child: Text(it.label)),
@@ -851,7 +859,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       onPressed: () => Navigator.of(ctx).pop(),
                       child: Text('Done',
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: AppColors.forest500)),
@@ -869,7 +877,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                     for (final it in items)
                       Center(
                         child: Text(it.label,
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 18, color: AppColors.ink600)),
                       ),
                   ],
@@ -891,7 +899,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
       value: value,
       onChanged: onChanged,
       title: Text(title,
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink600)),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink600)),
       activeThumbColor: AppColors.forest500,
       contentPadding: EdgeInsets.zero,
       dense: true,
@@ -941,13 +949,13 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
               ),
               const SizedBox(height: 20),
               Text(_chosen!.game.name,
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 26, color: AppColors.ink600),
                   textAlign: TextAlign.center),
               if (friendName != null) ...[
                 const SizedBox(height: 8),
                 Text('from $friendName’s library',
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 13, color: AppColors.plum400)),
               ],
             ] else ...[
@@ -960,7 +968,7 @@ class _GameChooserPageState extends ConsumerState<GameChooserPage> {
                       : friendName != null
                           ? 'Set your criteria, then pick\na game from $friendName’s library'
                           : 'Set your criteria, then\npick a game from your library',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 22, color: AppColors.ink300),
                   textAlign: TextAlign.center),
             ],
@@ -1133,6 +1141,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
       _players.add(_Player(_nextId++, trimmed));
       _resetResult();
     });
+    _saveLastSet();
     try {
       final updated = await _recentsService.add(trimmed);
       if (mounted) setState(() => _recents = updated);
@@ -1195,7 +1204,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
                       child: Text('No recent players to add',
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                               fontSize: 14, color: AppColors.ink300)),
                     )
                   else
@@ -1208,7 +1217,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                               padding:
                                   const EdgeInsets.fromLTRB(20, 4, 20, 8),
                               child: Text('RECENT PLAYERS',
-                                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                                  style: AppFonts.sans(
                                       fontSize: 11,
                                       letterSpacing: 1.5,
                                       color: AppColors.ink400)),
@@ -1218,7 +1227,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                                 leading: const Icon(Icons.person_outline,
                                     color: AppColors.clay300),
                                 title: Text(name,
-                                    style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 15)),
+                                    style: AppFonts.sans(fontSize: 15)),
                                 trailing: IconButton(
                                   tooltip: 'Forget',
                                   icon: const Icon(Icons.close,
@@ -1246,7 +1255,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                               padding:
                                   const EdgeInsets.fromLTRB(20, 12, 20, 8),
                               child: Text('FROM YOUR FRIENDS',
-                                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                                  style: AppFonts.sans(
                                       fontSize: 11,
                                       letterSpacing: 1.5,
                                       color: AppColors.ink400)),
@@ -1256,12 +1265,12 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                                 leading: const Icon(Icons.group_outlined,
                                     color: AppColors.plum400),
                                 title: Text(name,
-                                    style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 15)),
+                                    style: AppFonts.sans(fontSize: 15)),
                                 trailing: Padding(
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 4),
                                   child: Text('Friend',
-                                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                                      style: AppFonts.sans(
                                           fontSize: 11,
                                           color: AppColors.plum400)),
                                 ),
@@ -1292,6 +1301,19 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
       _players.removeWhere((p) => p.id == id);
       _resetResult();
     });
+    _saveLastSet();
+  }
+
+  /// Remembers the board as the default player set for the Score Calculator
+  /// and Log a Play. Best-effort, and an empty board is never saved.
+  Future<void> _saveLastSet() async {
+    try {
+      await ref
+          .read(lastPlayerSetStoreProvider)
+          .save([for (final p in _players) p.name]);
+    } catch (e) {
+      debugPrint('First Player: failed to save last player set: $e');
+    }
   }
 
   void _resetResult() {
@@ -1391,7 +1413,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                     textInputAction: TextInputAction.done,
                     decoration: const InputDecoration(
                         hintText: 'Player name (press return to add)'),
-                    style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14),
+                    style: AppFonts.sans(fontSize: 14),
                     onSubmitted: (_) => _addPlayer(),
                   ),
                 ),
@@ -1456,7 +1478,7 @@ class _FirstPlayerPageState extends ConsumerState<FirstPlayerPage>
                   size: 72, color: AppColors.ink100),
               const SizedBox(height: 24),
               Text('Add players above,\nthen shuffle to pick',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 22, color: AppColors.ink300),
                   textAlign: TextAlign.center),
             ],
@@ -1714,7 +1736,7 @@ class _CardFront extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: GoogleFonts.literata(
+              style: AppFonts.serif(
                   fontSize: 20,
                   height: 1.05,
                   color: highlight ? AppColors.forest600 : AppColors.ink600)),
@@ -1828,7 +1850,7 @@ class _TurnTimerPageState extends State<TurnTimerPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(_display,
-                  style: GoogleFonts.dmMono(
+                  style: AppFonts.mono(
                       fontSize: 72,
                       color: _remaining == 0
                           ? AppColors.clay400
@@ -1845,7 +1867,7 @@ class _TurnTimerPageState extends State<TurnTimerPage> {
                         label: Text(preset.label),
                         selected: _seconds == preset.seconds,
                         showCheckmark: false,
-                        labelStyle: GoogleFonts.atkinsonHyperlegibleNext(
+                        labelStyle: AppFonts.sans(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: _seconds == preset.seconds
@@ -1866,7 +1888,7 @@ class _TurnTimerPageState extends State<TurnTimerPage> {
                 ),
                 const SizedBox(height: 20),
                 Text('Duration: $_seconds seconds',
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 13, color: AppColors.ink300)),
                 Slider(
                   value: _seconds.toDouble(),
@@ -1967,7 +1989,7 @@ class _GameTimerPageState extends State<GameTimerPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(_display,
-                  style: GoogleFonts.dmMono(
+                  style: AppFonts.mono(
                       fontSize: 72,
                       color: AppColors.ink600,
                       fontWeight: FontWeight.w300)),

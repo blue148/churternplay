@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/router.dart';
@@ -88,7 +88,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       const SizedBox(height: 20),
                       Text(
                         'Set New Password',
-                        style: GoogleFonts.literata(
+                        style: AppFonts.serif(
                           fontSize: 28,
                           fontWeight: FontWeight.w300,
                           color: AppColors.ink600,
@@ -109,7 +109,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                           child: Text(
                             _error!,
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                               fontSize: 13,
                               color: AppColors.clay600,
                             ),
@@ -150,7 +150,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
             fontSize: 10,
             letterSpacing: 2,
             color: AppColors.ink200,
@@ -163,7 +163,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           obscureText: true,
           validator: (v) =>
               v == null || v.length < 6 ? 'Min 6 characters' : null,
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
               fontSize: 14, color: AppColors.ink500),
           decoration: InputDecoration(
             fillColor: AppColors.parchment50,

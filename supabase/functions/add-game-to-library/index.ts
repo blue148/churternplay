@@ -8,11 +8,15 @@
 //
 // Request body:
 //   { bggId: number, barcode?: string }   — preferred; dedupes by bgg_id
-//   { barcode: string, name: string, publisher?: string }
+//   { barcode: string, name: string, publisher?: string, designers?: string[] }
 //                                          — bare entry when a barcode lookup
 //                                            found a name but no BGG match
 //
-// Response: { status: 'added' | 'already_in_library', game: <shared_games row> }
+// Any request may also carry `target: 'library' | 'wishlist'` (default
+// 'library'); with 'wishlist' the game goes on user_wishlist instead.
+//
+// Response: { status: 'added' | 'already_in_library' | 'already_in_wishlist',
+//             game: <shared_games row> }
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
@@ -23,6 +27,8 @@ interface AddGameRequest {
   barcode?: string;
   name?: string;
   publisher?: string;
+  designers?: string[];
+  target?: 'library' | 'wishlist';
 }
 
 const corsHeaders = {
@@ -93,6 +99,7 @@ serve(async (req) => {
     const bggId = typeof body.bggId === 'number' ? body.bggId : undefined;
     const barcode = body.barcode?.trim() || undefined;
     const name = body.name?.trim() || undefined;
+    const target = body.target === 'wishlist' ? 'wishlist' : 'library';
 
     if (barcode?.startsWith(MANUAL_BARCODE_PREFIX)) {
       return json({ error: 'Invalid barcode' }, 400);
@@ -111,6 +118,24 @@ serve(async (req) => {
 
       if (existing) {
         game = existing;
+        // Lazy backfill: rows created before designers were stored.
+        const existingDesigners = (existing.designers as string[] | null) ?? [];
+        if (existingDesigners.length === 0) {
+          try {
+            const details = await fetchBggDetails(bggId);
+            if (details.designers.length > 0) {
+              const { data: filled } = await adminClient
+                .from('shared_games')
+                .update({ designers: details.designers })
+                .eq('id', existing.id)
+                .select()
+                .single();
+              if (filled) game = filled;
+            }
+          } catch (_) {
+            // Best effort — never fail the add over designer data.
+          }
+        }
         // Upgrade a placeholder barcode to the real one now that we have it.
         const existingBarcode = existing.barcode as string | null;
         if (barcode && existingBarcode?.startsWith(MANUAL_BARCODE_PREFIX)) {
@@ -137,6 +162,7 @@ serve(async (req) => {
               bgg_id: bggId,
               name: details.name,
               publisher: details.publisher,
+              designers: details.designers,
               year: details.year?.toString() ?? null,
               cover_image: details.cover_image,
               min_players: details.min_players,
@@ -172,6 +198,9 @@ serve(async (req) => {
             barcode,
             name,
             publisher: body.publisher?.trim() || null,
+            designers: (body.designers ?? [])
+              .map((d) => String(d).trim())
+              .filter((d) => d.length > 0),
           })
           .select()
           .single();
@@ -182,7 +211,29 @@ serve(async (req) => {
       return json({ error: 'Either bggId, or barcode and name, are required' }, 400);
     }
 
-    // The library row is written as the caller, so user_library RLS still applies.
+    // Rows are written as the caller, so user_library / user_wishlist RLS applies.
+    if (target === 'wishlist') {
+      const { data: inLibrary } = await authClient
+        .from('user_library')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('game_id', game!.id)
+        .maybeSingle();
+      if (inLibrary) {
+        return json({ status: 'already_in_library', game });
+      }
+      const { error: wishlistError } = await authClient
+        .from('user_wishlist')
+        .insert({ user_id: user.id, game_id: game!.id });
+      if (wishlistError) {
+        if (wishlistError.code === UNIQUE_VIOLATION) {
+          return json({ status: 'already_in_wishlist', game });
+        }
+        throw wishlistError;
+      }
+      return json({ status: 'added', game });
+    }
+
     const { error: libraryError } = await authClient
       .from('user_library')
       .insert({ user_id: user.id, game_id: game!.id });

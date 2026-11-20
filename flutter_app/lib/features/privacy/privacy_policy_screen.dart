@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'privacy_policy_content.dart';
@@ -20,7 +20,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             Text(
               'PRIVACY POLICY',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 2.4,
@@ -30,7 +30,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Churtern Play',
-              style: GoogleFonts.literata(
+              style: AppFonts.serif(
                 fontSize: 34,
                 fontWeight: FontWeight.w500,
                 color: AppColors.ink600,
@@ -39,7 +39,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Effective $privacyPolicyEffectiveDate',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                 fontSize: 12,
                 color: AppColors.ink300,
               ),
@@ -63,13 +63,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 
-  static TextStyle get _headingStyle => GoogleFonts.literata(
+  static TextStyle get _headingStyle => AppFonts.serif(
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: AppColors.ink600,
       );
 
-  static TextStyle get _bodyStyle => GoogleFonts.atkinsonHyperlegibleNext(
+  static TextStyle get _bodyStyle => AppFonts.sans(
         fontSize: 14,
         height: 1.55,
         color: AppColors.ink400,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/library_entry.dart';
@@ -70,7 +70,8 @@ class _FriendLibraryScreenState extends ConsumerState<FriendLibraryScreen> {
       result = result
           .where((e) =>
               e.game.name.toLowerCase().contains(q) ||
-              (e.game.publisher?.toLowerCase().contains(q) ?? false))
+              (e.game.publisher?.toLowerCase().contains(q) ?? false) ||
+              e.game.designers.any((d) => d.toLowerCase().contains(q)))
           .toList();
     }
     // Facet filters are out of scope for v1 (PRD §13.1) — this is sort-only.
@@ -164,14 +165,14 @@ class _FriendLibraryScreenState extends ConsumerState<FriendLibraryScreen> {
                   child: Text(
                     "Viewing ${widget.friendUsername}'s library (read-only)",
                     style:
-                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink500),
+                        AppFonts.sans(fontSize: 12, color: AppColors.ink500),
                   ),
                 ),
                 TextButton.icon(
                   onPressed: () => context.pop(),
                   icon: const Icon(Icons.arrow_back, size: 14),
                   label: Text('Back',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12)),
+                      style: AppFonts.sans(fontSize: 12)),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.plum400,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -191,7 +192,7 @@ class _FriendLibraryScreenState extends ConsumerState<FriendLibraryScreen> {
                     controller: _searchCtrl,
                     onChanged: (v) => setState(() => _query = v),
                     style:
-                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink500),
+                        AppFonts.sans(fontSize: 14, color: AppColors.ink500),
                     decoration: InputDecoration(
                       hintText: 'Search games…',
                       prefixIcon: const Icon(Icons.search,
@@ -232,7 +233,7 @@ class _FriendLibraryScreenState extends ConsumerState<FriendLibraryScreen> {
                             color: AppColors.clay400, size: 40),
                         const SizedBox(height: 12),
                         Text('Failed to load library',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.ink400)),
+                            style: AppFonts.sans(color: AppColors.ink400)),
                         const SizedBox(height: 8),
                         TextButton(onPressed: _refresh, child: const Text('Retry')),
                       ],
@@ -255,7 +256,7 @@ class _FriendLibraryScreenState extends ConsumerState<FriendLibraryScreen> {
                           all.isEmpty
                               ? "${widget.friendUsername}'s library is empty"
                               : 'No results',
-                          style: GoogleFonts.literata(
+                          style: AppFonts.serif(
                               fontSize: 22, color: AppColors.ink300),
                         ),
                       ],

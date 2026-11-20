@@ -1,16 +1,21 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/services/games_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/library_provider.dart';
+import '../../providers/wishlist_provider.dart';
 
 /// Route `extra` for `/library/manual-add`.
 class ManualAddArgs {
-  const ManualAddArgs({this.barcode, this.initialQuery});
+  const ManualAddArgs(
+      {this.barcode, this.initialQuery, this.toWishlist = false});
+
+  /// Add the picked game to the wishlist instead of the library.
+  final bool toWishlist;
 
   /// A scanned barcode no lookup service could match; the saved game keeps it.
   final String? barcode;
@@ -30,10 +35,12 @@ class ManualAddArgs {
 /// [initialQuery] prefills and runs the search, e.g. with a title read from a
 /// box photo.
 class ManualGameEntryPage extends ConsumerStatefulWidget {
-  const ManualGameEntryPage({super.key, this.barcode, this.initialQuery});
+  const ManualGameEntryPage(
+      {super.key, this.barcode, this.initialQuery, this.toWishlist = false});
 
   final String? barcode;
   final String? initialQuery;
+  final bool toWishlist;
 
   @override
   ConsumerState<ManualGameEntryPage> createState() =>
@@ -172,9 +179,14 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       final result = await GamesService.addGameToLibraryFromBgg(
         bggId: bggId,
         barcode: widget.barcode,
+        target: widget.toWishlist ? 'wishlist' : 'library',
       );
       final game = result.game;
-      await ref.read(libraryProvider.notifier).refresh();
+      if (widget.toWishlist) {
+        await ref.read(wishlistProvider.notifier).refresh();
+      } else {
+        await ref.read(libraryProvider.notifier).refresh();
+      }
 
       // Crowdsource the barcode → BGG mapping when we have a real barcode.
       if (widget.barcode != null) {
@@ -188,8 +200,12 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
           content: Text(
             result.alreadyInLibrary
                 ? '${game.name} is already in your library'
-                : '${game.name} added to your library',
-            style: GoogleFonts.atkinsonHyperlegibleNext(),
+                : result.alreadyInWishlist
+                    ? '${game.name} is already on your wishlist'
+                    : widget.toWishlist
+                        ? '${game.name} added to your wishlist'
+                        : '${game.name} added to your library',
+            style: AppFonts.sans(),
           ),
           backgroundColor: AppColors.forest500,
         ),
@@ -217,7 +233,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
     return Scaffold(
       backgroundColor: AppColors.parchment50,
       appBar: AppBar(
-        title: const Text('Add a Game'),
+        title: Text(widget.toWishlist ? 'Add to Wishlist' : 'Add a Game'),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -252,12 +268,12 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
                 ? 'That barcode looks like “${widget.initialQuery}”. Pick the '
                     'matching game below, or edit the search.'
                 : "We couldn't match that barcode. Search for the game below.",
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400),
+            style: AppFonts.sans(fontSize: 13, color: AppColors.ink400),
           ),
           const SizedBox(height: 4),
           Text(
             'Barcode: ${widget.barcode}',
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 12,
                 color: AppColors.ink300,
                 fontWeight: FontWeight.w600),
@@ -279,7 +295,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       child: Text(
         'Matches for the title we read from your photo. Edit the search if '
         "it's not quite right.",
-        style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400),
+        style: AppFonts.sans(fontSize: 13, color: AppColors.ink400),
       ),
     );
   }
@@ -354,7 +370,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       ),
       child: Text(
         message,
-        style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.clay500),
+        style: AppFonts.sans(fontSize: 13, color: AppColors.clay500),
       ),
     );
   }
@@ -372,7 +388,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
           ),
           const SizedBox(width: 12),
           Text('Loading game details…',
-              style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.ink300)),
+              style: AppFonts.sans(color: AppColors.ink300)),
         ],
       ),
     );
@@ -384,7 +400,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
       children: [
         const SizedBox(height: 12),
         Text('Select your game',
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.ink400)),
@@ -401,11 +417,11 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
             ),
             child: ListTile(
               title: Text(r['name'] as String? ?? 'Unknown',
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontWeight: FontWeight.w600, color: AppColors.ink500)),
               subtitle: Text(
                 year != null ? 'Published $year' : 'Year unknown',
-                style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink300),
+                style: AppFonts.sans(fontSize: 12, color: AppColors.ink300),
               ),
               trailing:
                   const Icon(Icons.chevron_right, color: AppColors.ink200),
@@ -466,15 +482,15 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(name,
-                            style: GoogleFonts.literata(
+                            style: AppFonts.serif(
                                 fontSize: 22, color: AppColors.ink500)),
                         if (year != null)
                           Text('Published $year',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 13, color: AppColors.ink300)),
                         if (publisher != null)
                           Text(publisher,
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 13, color: AppColors.ink300)),
                       ],
                     ),
@@ -533,7 +549,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
                             strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.add, size: 20),
-                label: const Text('Add to Library'),
+                label: Text(widget.toWishlist ? 'Add to Wishlist' : 'Add to Library'),
               ),
             ),
           ],
@@ -549,7 +565,7 @@ class _ManualGameEntryPageState extends ConsumerState<ManualGameEntryPage> {
         Icon(icon, size: 16, color: AppColors.ink300),
         const SizedBox(width: 4),
         Text(label,
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink400)),
+            style: AppFonts.sans(fontSize: 13, color: AppColors.ink400)),
       ],
     );
   }

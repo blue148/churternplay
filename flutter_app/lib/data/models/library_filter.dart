@@ -8,7 +8,36 @@ enum LibrarySort {
   dateAddedDesc,
   dateAddedAsc,
   playsDesc,
-  playsAsc;
+  playsAsc,
+  designerAsc,
+  designerDesc,
+  publisherAsc,
+  publisherDesc,
+  heartsDesc,
+  punchDesc;
+
+  /// Section heading used by the sort sheet.
+  String get group {
+    switch (this) {
+      case LibrarySort.nameAsc:
+      case LibrarySort.nameDesc:
+        return 'Name';
+      case LibrarySort.dateAddedDesc:
+      case LibrarySort.dateAddedAsc:
+        return 'Date';
+      case LibrarySort.playsDesc:
+      case LibrarySort.playsAsc:
+        return 'Plays';
+      case LibrarySort.designerAsc:
+      case LibrarySort.designerDesc:
+      case LibrarySort.publisherAsc:
+      case LibrarySort.publisherDesc:
+        return 'Creator';
+      case LibrarySort.heartsDesc:
+      case LibrarySort.punchDesc:
+        return 'Rating';
+    }
+  }
 
   String get label {
     switch (this) {
@@ -24,22 +53,52 @@ enum LibrarySort {
         return 'Most Played';
       case LibrarySort.playsAsc:
         return 'Least Played';
+      case LibrarySort.designerAsc:
+        return 'Designer (A–Z)';
+      case LibrarySort.designerDesc:
+        return 'Designer (Z–A)';
+      case LibrarySort.publisherAsc:
+        return 'Publisher (A–Z)';
+      case LibrarySort.publisherDesc:
+        return 'Publisher (Z–A)';
+      case LibrarySort.heartsDesc:
+        return 'Most Liked (hearts)';
+      case LibrarySort.punchDesc:
+        return 'Most Punch-worthy (fists)';
     }
   }
 }
+
+/// The multi-select text facets of a [LibraryFilter].
+enum StringFacet { publishers, designers, gameTypes, categories, years, rankings }
 
 /// Immutable description of the active filters + sort for the library list.
 ///
 /// Ports the filter state from the web `Library.tsx` component. Multi-select
 /// facets are kept as ordered [Set]s; play-count bounds are inclusive, with a
 /// null [maxPlays] meaning "no upper limit".
+/// Case-insensitive text compare where empty/null values always sort last,
+/// in both ascending and [descending] order.
+int compareOptionalText(String? a, String? b, {bool descending = false}) {
+  final aEmpty = a == null || a.trim().isEmpty;
+  final bEmpty = b == null || b.trim().isEmpty;
+  if (aEmpty && bEmpty) return 0;
+  if (aEmpty) return 1;
+  if (bEmpty) return -1;
+  final c = a.toLowerCase().compareTo(b.toLowerCase());
+  return descending ? -c : c;
+}
+
 class LibraryFilter {
   final Set<String> publishers;
+  final Set<String> designers;
   final Set<String> gameTypes;
   final Set<String> categories;
   final Set<String> years;
-  final Set<String> rankings; // 'high' | 'medium' | 'low'
+  final Set<String> rankings; // legacy 'high' | 'medium' | 'low'
   final Set<int> playerCounts; // 1..6, where 6 means "6+"
+  final int minHearts; // 0 = any
+  final int minPunch; // 0 = any
   final int minPlays;
   final int? maxPlays;
   final bool favoritesOnly;
@@ -48,11 +107,14 @@ class LibraryFilter {
 
   const LibraryFilter({
     this.publishers = const {},
+    this.designers = const {},
     this.gameTypes = const {},
     this.categories = const {},
     this.years = const {},
     this.rankings = const {},
     this.playerCounts = const {},
+    this.minHearts = 0,
+    this.minPunch = 0,
     this.minPlays = 0,
     this.maxPlays,
     this.favoritesOnly = false,
@@ -65,11 +127,14 @@ class LibraryFilter {
   int get activeCount {
     var count = 0;
     count += publishers.length;
+    count += designers.length;
     count += gameTypes.length;
     count += categories.length;
     count += years.length;
     count += rankings.length;
     count += playerCounts.length;
+    if (minHearts > 0) count++;
+    if (minPunch > 0) count++;
     if (minPlays > 0) count++;
     if (maxPlays != null) count++;
     if (favoritesOnly) count++;
@@ -81,11 +146,14 @@ class LibraryFilter {
 
   LibraryFilter copyWith({
     Set<String>? publishers,
+    Set<String>? designers,
     Set<String>? gameTypes,
     Set<String>? categories,
     Set<String>? years,
     Set<String>? rankings,
     Set<int>? playerCounts,
+    int? minHearts,
+    int? minPunch,
     int? minPlays,
     Object? maxPlays = _sentinel,
     bool? favoritesOnly,
@@ -94,11 +162,14 @@ class LibraryFilter {
   }) {
     return LibraryFilter(
       publishers: publishers ?? this.publishers,
+      designers: designers ?? this.designers,
       gameTypes: gameTypes ?? this.gameTypes,
       categories: categories ?? this.categories,
       years: years ?? this.years,
       rankings: rankings ?? this.rankings,
       playerCounts: playerCounts ?? this.playerCounts,
+      minHearts: minHearts ?? this.minHearts,
+      minPunch: minPunch ?? this.minPunch,
       minPlays: minPlays ?? this.minPlays,
       maxPlays:
           maxPlays == _sentinel ? this.maxPlays : maxPlays as int?,
@@ -112,25 +183,33 @@ class LibraryFilter {
   LibraryFilter cleared() => LibraryFilter(sort: sort);
 
   /// Toggles a value within one of the [String] multi-select facets.
-  LibraryFilter toggleString(Set<String> facet, String value) {
-    final next = Set<String>.from(facet);
-    next.contains(value) ? next.remove(value) : next.add(value);
-    return _replaceStringFacet(facet, next);
+  LibraryFilter toggleFacet(StringFacet facet, String value) {
+    Set<String> toggled(Set<String> current) {
+      final next = Set<String>.from(current);
+      next.contains(value) ? next.remove(value) : next.add(value);
+      return next;
+    }
+
+    switch (facet) {
+      case StringFacet.publishers:
+        return copyWith(publishers: toggled(publishers));
+      case StringFacet.designers:
+        return copyWith(designers: toggled(designers));
+      case StringFacet.gameTypes:
+        return copyWith(gameTypes: toggled(gameTypes));
+      case StringFacet.categories:
+        return copyWith(categories: toggled(categories));
+      case StringFacet.years:
+        return copyWith(years: toggled(years));
+      case StringFacet.rankings:
+        return copyWith(rankings: toggled(rankings));
+    }
   }
 
   LibraryFilter togglePlayerCount(int count) {
     final next = Set<int>.from(playerCounts);
     next.contains(count) ? next.remove(count) : next.add(count);
     return copyWith(playerCounts: next);
-  }
-
-  LibraryFilter _replaceStringFacet(Set<String> facet, Set<String> next) {
-    if (identical(facet, publishers)) return copyWith(publishers: next);
-    if (identical(facet, gameTypes)) return copyWith(gameTypes: next);
-    if (identical(facet, categories)) return copyWith(categories: next);
-    if (identical(facet, years)) return copyWith(years: next);
-    if (identical(facet, rankings)) return copyWith(rankings: next);
-    return this;
   }
 
   /// Applies all active filters then sorts. Mirrors the filtering `useEffect`
@@ -149,6 +228,11 @@ class LibraryFilter {
         (e.game.publisher == null || !publishers.contains(e.game.publisher))) {
       return false;
     }
+    if (designers.isNotEmpty && !e.game.designers.any(designers.contains)) {
+      return false;
+    }
+    if (minHearts > 0 && e.heartRating < minHearts) return false;
+    if (minPunch > 0 && e.punchRating < minPunch) return false;
     if (gameTypes.isNotEmpty &&
         !e.game.gameType.any(gameTypes.contains)) {
       return false;
@@ -209,6 +293,22 @@ class LibraryFilter {
         return b.playCount.compareTo(a.playCount);
       case LibrarySort.playsAsc:
         return a.playCount.compareTo(b.playCount);
+      case LibrarySort.designerAsc:
+        return compareOptionalText(a.game.primaryDesigner,
+            b.game.primaryDesigner);
+      case LibrarySort.designerDesc:
+        return compareOptionalText(
+            a.game.primaryDesigner, b.game.primaryDesigner,
+            descending: true);
+      case LibrarySort.publisherAsc:
+        return compareOptionalText(a.game.publisher, b.game.publisher);
+      case LibrarySort.publisherDesc:
+        return compareOptionalText(a.game.publisher, b.game.publisher,
+            descending: true);
+      case LibrarySort.heartsDesc:
+        return b.heartRating.compareTo(a.heartRating);
+      case LibrarySort.punchDesc:
+        return b.punchRating.compareTo(a.punchRating);
     }
   }
 

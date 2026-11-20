@@ -101,6 +101,8 @@ abstract class GamesService {
     String? barcode,
     String? name,
     String? publisher,
+    List<String>? designers,
+    String target = 'library',
   }) async {
     final response = await supabase.functions.invoke(
       'add-game-to-library',
@@ -109,12 +111,15 @@ abstract class GamesService {
         if (barcode != null) 'barcode': barcode,
         if (name != null) 'name': name,
         if (publisher != null) 'publisher': publisher,
+        if (designers != null && designers.isNotEmpty) 'designers': designers,
+        if (target != 'library') 'target': target,
       },
     );
     final data = response.data as Map<String, dynamic>;
     return AddGameResult(
       game: Game.fromJson(data['game'] as Map<String, dynamic>),
       alreadyInLibrary: data['status'] == 'already_in_library',
+      alreadyInWishlist: data['status'] == 'already_in_wishlist',
     );
   }
 
@@ -153,35 +158,50 @@ abstract class GamesService {
 
   static Future<void> addGameToWishlist(
       String userId, String gameId, String priority,
-      {String? notes}) async {
+      {String? notes, int heartRating = 0, int punchRating = 0}) async {
     await supabase.from('user_wishlist').insert({
       'user_id': userId,
       'game_id': gameId,
       'priority': priority,
       if (notes != null && notes.isNotEmpty) 'notes': notes,
+      if (heartRating > 0) 'heart_rating': heartRating,
+      if (punchRating > 0) 'punch_rating': punchRating,
     });
+  }
+
+  static Future<void> updateWishlistEntry(
+      String entryId, Map<String, dynamic> updates) async {
+    await supabase.from('user_wishlist').update(updates).eq('id', entryId);
   }
 
   static Future<void> removeGameFromWishlist(String entryId) async {
     await supabase.from('user_wishlist').delete().eq('id', entryId);
   }
 
+  /// Atomic (single Postgres function): carries ratings and notes over.
   static Future<void> moveWishlistToLibrary(
       String userId, String gameId) async {
-    await supabase
-        .from('user_library')
-        .insert({'user_id': userId, 'game_id': gameId});
-    await supabase
-        .from('user_wishlist')
-        .delete()
-        .eq('user_id', userId)
-        .eq('game_id', gameId);
+    await supabase.rpc('move_wishlist_to_library', params: {'p_game_id': gameId});
+  }
+
+  /// Atomic Library → Wishlist move. Carries ratings and notes over. Throws a
+  /// [PostgrestException] with message `game_has_plays` when the game has
+  /// logged plays (the UI blocks this up front, so it's a safety net).
+  static Future<void> moveLibraryToWishlist(String gameId,
+      {String priority = 'medium'}) async {
+    await supabase.rpc('move_library_to_wishlist',
+        params: {'p_game_id': gameId, 'p_priority': priority});
   }
 }
 
 class AddGameResult {
-  const AddGameResult({required this.game, required this.alreadyInLibrary});
+  const AddGameResult({
+    required this.game,
+    required this.alreadyInLibrary,
+    this.alreadyInWishlist = false,
+  });
 
   final Game game;
   final bool alreadyInLibrary;
+  final bool alreadyInWishlist;
 }

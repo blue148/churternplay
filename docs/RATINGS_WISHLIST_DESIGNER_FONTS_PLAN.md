@@ -1,7 +1,15 @@
 # Plan: Ratings, Wishlist Moves, Designer/Publisher Facets, Font Change
 
 Branch: `feature/ratings-wishlist-designer-fonts` (cut from `main` @ `d229c7e`, 2026-11-19)
-Status: **Plan only. No code written yet.**
+Status: **Implemented on this branch, uncommitted. Migration NOT applied to the live DB; edge functions NOT deployed; designer backfill NOT run.**
+
+Implementation notes (deviations from the plan above):
+- Decisions used the recommended defaults (Atkinson Hyperlegible *Next*, 0 = unrated, boxing-glove fist icon, ratings visible to friends, block Library to Wishlist when plays exist).
+- Fonts: `google_fonts` is removed. Literata, Atkinson Hyperlegible Next and DM Mono are bundled in `assets/fonts/` (OFL licenses included) and referenced only through `AppFonts` in `app_text_styles.dart`. The plan said ~25 direct call sites; there were 278, all migrated. The app no longer makes runtime font requests.
+- Fixed a latent bug found on the way: `LibraryFilter.toggleString` used `identical()` on facet sets, and all empty facets share one `const {}`, so toggling any empty facet toggled Publisher. Replaced with `toggleFacet(StringFacet, value)`.
+- Manual designer/publisher entry fields were not added: the manual flow is a BGG search, so designers come from BGG.
+- The grid card is unchanged (too tight for the credit line and ratings); list cards, the detail screen and wishlist rows show them.
+- The speed dial gained a fifth action, "Add to Wishlist".
 
 ## Goals
 

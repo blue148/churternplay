@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/library_entry.dart';
 import '../../../data/models/library_filter.dart';
 import '../../../providers/library_provider.dart';
+import '../../../core/theme/app_text_styles.dart';
 import 'filter_chip_group.dart';
+import 'rating_row.dart';
 
 /// Opens the full faceted filter sheet for the catalogue. Edits are made on a
 /// local draft and only committed to [libraryFilterProvider] when the user taps
@@ -71,41 +72,44 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
                       const SizedBox(height: 20),
                       _plays(maxPlays),
                     ],
+                    _section(_minRating(RatingKind.hearts, _draft.minHearts,
+                        (v) => _update(_draft.copyWith(minHearts: v)))),
+                    _section(_minRating(RatingKind.fists, _draft.minPunch,
+                        (v) => _update(_draft.copyWith(minPunch: v)))),
                     _section(FilterChipGroup(
-                      title: 'Ranking',
-                      options: const ['high', 'medium', 'low'],
-                      selected: _draft.rankings,
-                      capitalize: true,
+                      title: 'Designer',
+                      options: facets.designers,
+                      selected: _draft.designers,
                       onToggle: (v) =>
-                          _update(_draft.toggleString(_draft.rankings, v)),
+                          _update(_draft.toggleFacet(StringFacet.designers, v)),
                     )),
                     _section(FilterChipGroup(
                       title: 'Publisher',
                       options: facets.publishers,
                       selected: _draft.publishers,
                       onToggle: (v) =>
-                          _update(_draft.toggleString(_draft.publishers, v)),
+                          _update(_draft.toggleFacet(StringFacet.publishers, v)),
                     )),
                     _section(FilterChipGroup(
                       title: 'Game Type',
                       options: facets.gameTypes,
                       selected: _draft.gameTypes,
                       onToggle: (v) =>
-                          _update(_draft.toggleString(_draft.gameTypes, v)),
+                          _update(_draft.toggleFacet(StringFacet.gameTypes, v)),
                     )),
                     _section(FilterChipGroup(
                       title: 'Category',
                       options: facets.categories,
                       selected: _draft.categories,
                       onToggle: (v) =>
-                          _update(_draft.toggleString(_draft.categories, v)),
+                          _update(_draft.toggleFacet(StringFacet.categories, v)),
                     )),
                     _section(FilterChipGroup(
                       title: 'Year',
                       options: facets.years,
                       selected: _draft.years,
                       onToggle: (v) =>
-                          _update(_draft.toggleString(_draft.years, v)),
+                          _update(_draft.toggleFacet(StringFacet.years, v)),
                     )),
                   ],
                 ),
@@ -137,14 +141,14 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
           Row(
             children: [
               Text('Filters',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 24, color: AppColors.ink500)),
               const Spacer(),
               if (_draft.hasActiveFilters)
                 TextButton(
                   onPressed: () => _update(_draft.cleared()),
                   child: Text('Clear all',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 13, color: AppColors.clay400)),
                 ),
               IconButton(
@@ -174,7 +178,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('NUMBER OF PLAYERS',
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
@@ -188,7 +192,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
               FilterChip(
                 label: Text(
                   count == 6 ? '6+' : '$count',
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                     fontSize: 12,
                     color: _draft.playerCounts.contains(count)
                         ? Colors.white
@@ -217,6 +221,42 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
     );
   }
 
+  /// "Minimum hearts / fists" picker: Any, 1+ … 5.
+  Widget _minRating(RatingKind kind, int current, ValueChanged<int> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('MINIMUM ${kind.label.toUpperCase()}',
+            style: AppTextStyles.label()),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (var n = 0; n <= 5; n++)
+              ChoiceChip(
+                label: Text(
+                  n == 0 ? 'Any' : '$n+',
+                  style: AppTextStyles.body(
+                      size: 12,
+                      color: current == n ? Colors.white : AppColors.ink400),
+                ),
+                selected: current == n,
+                onSelected: (_) => onChanged(n),
+                selectedColor: kind.color,
+                backgroundColor: Colors.white,
+                showCheckmark: false,
+                side: BorderSide(
+                    color: current == n ? kind.color : AppColors.parchment200),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _plays(int maxPlays) {
     final start = _draft.minPlays.toDouble();
     final end = (_draft.maxPlays ?? maxPlays).toDouble().clamp(0, maxPlays);
@@ -226,7 +266,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
         Row(
           children: [
             Text('NUMBER OF PLAYS',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.2,
@@ -236,7 +276,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
               _draft.minPlays == 0 && _draft.maxPlays == null
                   ? 'Any'
                   : '${_draft.minPlays} – ${_draft.maxPlays ?? '$maxPlays+'}',
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink400),
+              style: AppFonts.sans(fontSize: 12, color: AppColors.ink400),
             ),
           ],
         ),
@@ -289,7 +329,7 @@ class _LibraryFilterSheetState extends ConsumerState<_LibraryFilterSheet> {
             ),
             child: Text(
               matchCount == 1 ? 'Show 1 game' : 'Show $matchCount games',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white),

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_text_styles.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -12,17 +12,43 @@ import '../../../data/models/library_entry.dart';
 import '../../../data/models/session_victory.dart';
 import '../../../data/services/sessions_service.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../data/models/wishlist_entry.dart';
 import '../../../providers/library_provider.dart';
+import '../../../providers/wishlist_provider.dart';
 import '../../../providers/recent_players_provider.dart';
 
 /// Opens the "Log a Play" sheet for [entry] — records a game session with
 /// per-player results, mirroring the web app's victory-log flow.
 Future<void> showLogPlaySheet(BuildContext context, LibraryEntry entry) {
+  final container = ProviderScope.containerOf(context, listen: false);
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => LogPlaySheet(entry: entry),
+    builder: (_) => LogPlaySheet(
+      game: entry.game,
+      onRecorded: (date) => container
+          .read(libraryProvider.notifier)
+          .recordPlayedDate(entry.id, date),
+    ),
+  );
+}
+
+/// Same sheet for a wishlist game — you can play a game before you own it
+/// (a friend's copy, a demo, a café).
+Future<void> showLogPlaySheetForWishlist(
+    BuildContext context, WishlistEntry entry) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => LogPlaySheet(
+      game: entry.game,
+      onRecorded: (date) => container
+          .read(wishlistProvider.notifier)
+          .recordPlayedDate(entry.id, date),
+    ),
   );
 }
 
@@ -36,9 +62,12 @@ class _PlayerInput {
 }
 
 class LogPlaySheet extends ConsumerStatefulWidget {
-  const LogPlaySheet({super.key, required this.entry});
+  const LogPlaySheet({super.key, required this.game, required this.onRecorded});
 
-  final LibraryEntry entry;
+  final Game game;
+
+  /// Persists the play date on whichever list the game is on.
+  final Future<void> Function(DateTime playedAt) onRecorded;
 
   @override
   ConsumerState<LogPlaySheet> createState() => _LogPlaySheetState();
@@ -57,8 +86,29 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
   @override
   void initState() {
     super.initState();
-    _players.add(_PlayerInput(id: 0, name: 'Me'));
+    _players.add(_PlayerInput(id: 0));
     _loadRecents();
+    _loadDefaultPlayers();
+  }
+
+  /// Pre-fills the players from the last First Player set — unless the user
+  /// has already typed in the blank starter row while it loaded.
+  Future<void> _loadDefaultPlayers() async {
+    try {
+      final names = await ref.read(lastPlayerSetStoreProvider).load();
+      if (!mounted || names.isEmpty) return;
+      final untouched = _players.length == 1 && _players.first.name.trim().isEmpty;
+      if (!untouched) return;
+      setState(() {
+        _players
+          ..clear()
+          ..addAll([
+            for (final name in names) _PlayerInput(id: _nextId++, name: name),
+          ]);
+      });
+    } catch (_) {
+      // Keep the blank starter row.
+    }
   }
 
   @override
@@ -114,10 +164,10 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('No winners selected',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text(
           'Log this session without marking a winner?',
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink400),
         ),
         actions: [
           TextButton(
@@ -127,7 +177,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Continue',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -144,7 +194,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
     if (validPlayers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Add at least one player', style: GoogleFonts.atkinsonHyperlegibleNext())),
+            content: Text('Add at least one player', style: AppFonts.sans())),
       );
       return;
     }
@@ -158,7 +208,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
     try {
       final session = await SessionsService.createSession(
         userId: user.id,
-        gameId: widget.entry.gameId,
+        gameId: widget.game.id,
         sessionDate: _sessionDate,
         durationMinutes: _durationMinutes,
         playerCount: validPlayers.length,
@@ -185,16 +235,14 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
         unawaited(recentsStore.add(p.name.trim()));
       }
 
-      await ref
-          .read(libraryProvider.notifier)
-          .recordPlayedDate(widget.entry.id, _sessionDate);
+      await widget.onRecorded(_sessionDate);
 
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Logged play for ${widget.entry.game.name}',
-              style: GoogleFonts.atkinsonHyperlegibleNext()),
+          content: Text('Logged play for ${widget.game.name}',
+              style: AppFonts.sans()),
           backgroundColor: AppColors.forest500,
         ),
       );
@@ -204,14 +252,14 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Failed to log play. Please try again.',
-                style: GoogleFonts.atkinsonHyperlegibleNext())),
+                style: AppFonts.sans())),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final game = widget.entry.game;
+    final game = widget.game;
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.5,
@@ -275,7 +323,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
           Row(
             children: [
               Text('Log a Play',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 24, color: AppColors.ink500)),
               const Spacer(),
               IconButton(
@@ -311,14 +359,14 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(game.name,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.ink500)),
               if (game.publisher != null)
                 Text(game.publisher!,
                     style:
-                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink300)),
+                        AppFonts.sans(fontSize: 12, color: AppColors.ink300)),
             ],
           ),
         ),
@@ -337,7 +385,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(text,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.0,
@@ -381,10 +429,16 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
                 const Icon(Icons.calendar_today_outlined,
                     size: 16, color: AppColors.ink300),
                 const SizedBox(width: 8),
-                Text(
-                  DateFormat('MMM d, yyyy • h:mm a').format(_sessionDate),
-                  style:
-                      GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink500),
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      DateFormat('MMM d, yyyy • h:mm a').format(_sessionDate),
+                      style: AppFonts.sans(
+                          fontSize: 13, color: AppColors.ink500),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -402,7 +456,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
         TextField(
           keyboardType: TextInputType.number,
           decoration: _fieldDecoration(hint: 'Optional'),
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink500),
+          style: AppFonts.sans(fontSize: 13, color: AppColors.ink500),
           onChanged: (v) =>
               _durationMinutes = v.trim().isEmpty ? null : int.tryParse(v),
         ),
@@ -419,7 +473,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
           controller: _notesCtrl,
           maxLines: 3,
           decoration: _fieldDecoration(hint: 'Any notes about this session…'),
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink500),
+          style: AppFonts.sans(fontSize: 13, color: AppColors.ink500),
         ),
       ],
     );
@@ -452,7 +506,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
             children: [
               for (final name in recents)
                 ActionChip(
-                  label: Text(name, style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12)),
+                  label: Text(name, style: AppFonts.sans(fontSize: 12)),
                   avatar: const Icon(Icons.history, size: 14),
                   visualDensity: VisualDensity.compact,
                   backgroundColor: AppColors.parchment100,
@@ -481,9 +535,10 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
         children: [
           Expanded(
             child: TextFormField(
+              key: ValueKey('player-name-${player.id}'),
               initialValue: player.name,
               decoration: _fieldDecoration(hint: 'Player name'),
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink500),
+              style: AppFonts.sans(fontSize: 13, color: AppColors.ink500),
               onChanged: (v) => player.name = v,
             ),
           ),
@@ -520,7 +575,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
                   hint: 'Score',
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 12)),
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink500),
+              style: AppFonts.sans(fontSize: 12, color: AppColors.ink500),
               onChanged: (v) =>
                   player.score = v.trim().isEmpty ? null : int.tryParse(v),
             ),
@@ -535,7 +590,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
                   hint: '#',
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 12)),
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, color: AppColors.ink500),
+              style: AppFonts.sans(fontSize: 12, color: AppColors.ink500),
               onChanged: (v) =>
                   player.placement = v.trim().isEmpty ? null : int.tryParse(v),
             ),
@@ -583,7 +638,7 @@ class _LogPlaySheetState extends ConsumerState<LogPlaySheet> {
                 : const Icon(Icons.emoji_events_outlined, size: 18),
             label: Text(
               _submitting ? 'Logging…' : 'Log Play',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
             ),
           ),

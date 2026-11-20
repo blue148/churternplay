@@ -30,9 +30,6 @@ dependencies:
   # Charts
   fl_chart: ^1.2.0
 
-  # Typography
-  google_fonts: ^8.0.2
-
   # Date formatting
   intl: ^0.20.2
 
@@ -57,3 +54,38 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/fonts/OFL-Literata.txt
+    - assets/fonts/OFL-AtkinsonHyperlegibleNext.txt
+    - assets/fonts/OFL-DMMono.txt
+
+  # Bundled so no font is fetched from Google at runtime (works offline, and
+  # the app makes no third-party network request for typography).
+  fonts:
+    - family: Literata
+      fonts:
+        - asset: assets/fonts/Literata-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Literata-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Literata-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Literata-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Literata-Bold.ttf
+          weight: 700
+    - family: AtkinsonHyperlegibleNext
+      fonts:
+        - asset: assets/fonts/AtkinsonHyperlegibleNext-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AtkinsonHyperlegibleNext-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/AtkinsonHyperlegibleNext-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/AtkinsonHyperlegibleNext-Bold.ttf
+          weight: 700
+    - family: DMMono
+      fonts:
+        - asset: assets/fonts/DMMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/DMMono-Medium.ttf
+          weight: 500

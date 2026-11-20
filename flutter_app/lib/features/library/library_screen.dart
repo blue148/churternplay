@@ -2,11 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/supabase_client.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../data/models/friend.dart';
+import '../../data/models/game.dart';
 import '../../data/models/game_suggestion.dart';
 import '../../data/models/library_entry.dart';
 import '../../data/models/wishlist_entry.dart';
@@ -21,6 +22,9 @@ import 'widgets/game_card.dart';
 import 'widgets/library_filter_sheet.dart';
 import 'widgets/log_play_sheet.dart';
 import 'widgets/quick_filter_chips.dart';
+import 'widgets/move_to_wishlist.dart';
+import 'widgets/rating_row.dart';
+import 'widgets/rating_sheet.dart';
 import 'widgets/sort_bottom_sheet.dart';
 import 'widgets/suggest_to_friend_sheet.dart';
 
@@ -96,10 +100,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             : null,
         bottom: TabBar(
           controller: _tabs,
-          labelStyle: GoogleFonts.atkinsonHyperlegibleNext(
+          labelStyle: AppFonts.sans(
               fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.3),
           unselectedLabelStyle:
-              GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, fontWeight: FontWeight.w400),
+              AppFonts.sans(fontSize: 13, fontWeight: FontWeight.w400),
           labelColor: AppColors.clay400,
           unselectedLabelColor: AppColors.ink300,
           indicatorColor: AppColors.clay400,
@@ -148,6 +152,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
         onLogPlay: () => showLogPlaySheet(context, entry),
         onSuggestToFriend: () =>
             showSuggestToFriendSheet(context, game: entry.game),
+        onMoveToWishlist: () => confirmAndMoveToWishlist(context, ref, entry),
+        onRate: () {
+          final notifier = ref.read(libraryProvider.notifier);
+          showRatingSheet(
+            context: context,
+            gameName: entry.game.name,
+            hearts: entry.heartRating,
+            fists: entry.punchRating,
+            onHearts: (v) => notifier.setHearts(entry.id, v),
+            onPunch: (v) => notifier.setPunch(entry.id, v),
+          );
+        },
       );
 
   void _confirmDelete(LibraryEntry entry) {
@@ -155,10 +171,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Remove game?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text(
           'Remove "${entry.game.name}" from your library?',
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink400),
         ),
         actions: [
           TextButton(
@@ -171,7 +187,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               ref.read(libraryProvider.notifier).removeGame(entry.id);
             },
             child: Text('Remove',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -225,7 +241,7 @@ class _CatalogueTabState extends ConsumerState<_CatalogueTab> {
           child: TextField(
             controller: _searchCtrl,
             onChanged: (v) => ref.read(librarySearchProvider.notifier).set(v),
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink500),
+            style: AppFonts.sans(fontSize: 14, color: AppColors.ink500),
             decoration: InputDecoration(
               hintText: 'Search games…',
               prefixIcon:
@@ -257,7 +273,7 @@ class _CatalogueTabState extends ConsumerState<_CatalogueTab> {
                       color: AppColors.clay400, size: 40),
                   const SizedBox(height: 12),
                   Text('Failed to load library',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.ink400)),
+                      style: AppFonts.sans(color: AppColors.ink400)),
                   const SizedBox(height: 8),
                   TextButton(onPressed: onRetry, child: const Text('Retry')),
                 ],
@@ -276,18 +292,18 @@ class _CatalogueTabState extends ConsumerState<_CatalogueTab> {
                       const SizedBox(height: 16),
                       Text(
                         libraryEmpty ? 'Your library is empty' : 'No results',
-                        style: GoogleFonts.literata(
+                        style: AppFonts.serif(
                             fontSize: 22, color: AppColors.ink300),
                       ),
                       if (libraryEmpty) ...[
                         const SizedBox(height: 8),
                         Text('Tap + to scan or search for your first game',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 13, color: AppColors.ink200)),
                       ] else ...[
                         const SizedBox(height: 8),
                         Text('Try adjusting your search or filters',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 13, color: AppColors.ink200)),
                       ],
                     ],
@@ -352,7 +368,8 @@ class _ControlRow extends ConsumerWidget {
                   context: context,
                   current: sort,
                   options: [
-                    for (final s in LibrarySort.values) SortOption(s, s.label),
+                    for (final s in LibrarySort.values)
+                      SortOption(s, s.label, group: s.group),
                   ],
                 );
                 if (selected != null) {
@@ -422,7 +439,7 @@ class _ControlButton extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: fgColor),
@@ -438,7 +455,7 @@ class _ControlButton extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(badge!,
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Colors.white)),
@@ -459,10 +476,49 @@ enum WishlistSort {
   nameAsc,
   nameDesc,
   dateAddedDesc,
-  dateAddedAsc;
+  dateAddedAsc,
+  designerAsc,
+  designerDesc,
+  publisherAsc,
+  publisherDesc,
+  heartsDesc,
+  punchDesc;
+
+  String get group {
+    switch (this) {
+      case WishlistSort.priority:
+        return 'Priority';
+      case WishlistSort.nameAsc:
+      case WishlistSort.nameDesc:
+        return 'Name';
+      case WishlistSort.dateAddedDesc:
+      case WishlistSort.dateAddedAsc:
+        return 'Date';
+      case WishlistSort.designerAsc:
+      case WishlistSort.designerDesc:
+      case WishlistSort.publisherAsc:
+      case WishlistSort.publisherDesc:
+        return 'Creator';
+      case WishlistSort.heartsDesc:
+      case WishlistSort.punchDesc:
+        return 'Rating';
+    }
+  }
 
   String get label {
     switch (this) {
+      case WishlistSort.designerAsc:
+        return 'Designer (A–Z)';
+      case WishlistSort.designerDesc:
+        return 'Designer (Z–A)';
+      case WishlistSort.publisherAsc:
+        return 'Publisher (A–Z)';
+      case WishlistSort.publisherDesc:
+        return 'Publisher (Z–A)';
+      case WishlistSort.heartsDesc:
+        return 'Most Liked (hearts)';
+      case WishlistSort.punchDesc:
+        return 'Most Punch-worthy (fists)';
       case WishlistSort.priority:
         return 'Priority';
       case WishlistSort.nameAsc:
@@ -529,6 +585,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
           .where((e) =>
               e.game.name.toLowerCase().contains(q) ||
               (e.game.publisher?.toLowerCase().contains(q) ?? false) ||
+              e.game.designers.any((d) => d.toLowerCase().contains(q)) ||
               (e.notes?.toLowerCase().contains(q) ?? false))
           .toList();
     }
@@ -552,6 +609,22 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
         return b.addedDate.compareTo(a.addedDate);
       case WishlistSort.dateAddedAsc:
         return a.addedDate.compareTo(b.addedDate);
+      case WishlistSort.designerAsc:
+        return compareOptionalText(
+            a.game.primaryDesigner, b.game.primaryDesigner);
+      case WishlistSort.designerDesc:
+        return compareOptionalText(
+            a.game.primaryDesigner, b.game.primaryDesigner,
+            descending: true);
+      case WishlistSort.publisherAsc:
+        return compareOptionalText(a.game.publisher, b.game.publisher);
+      case WishlistSort.publisherDesc:
+        return compareOptionalText(a.game.publisher, b.game.publisher,
+            descending: true);
+      case WishlistSort.heartsDesc:
+        return b.heartRating.compareTo(a.heartRating);
+      case WishlistSort.punchDesc:
+        return b.punchRating.compareTo(a.punchRating);
     }
   }
 
@@ -560,7 +633,8 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
       context: context,
       current: _sort,
       options: [
-        for (final s in WishlistSort.values) SortOption(s, s.label),
+        for (final s in WishlistSort.values)
+          SortOption(s, s.label, group: s.group),
       ],
     );
     if (selected != null) setState(() => _sort = selected);
@@ -578,9 +652,9 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
           child: TextField(
             controller: _searchCtrl,
             onChanged: (v) => setState(() => _searchQuery = v),
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink500),
+            style: AppFonts.sans(fontSize: 14, color: AppColors.ink500),
             decoration: InputDecoration(
-              hintText: 'Search wishlist…',
+              hintText: 'Search name, designer, publisher…',
               prefixIcon:
                   const Icon(Icons.search, size: 20, color: AppColors.ink200),
               suffixIcon: _searchQuery.isNotEmpty
@@ -615,7 +689,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                         padding: const EdgeInsets.only(right: 6),
                         child: ChoiceChip(
                           label: Text(label,
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                 fontSize: 12,
                                 color: _priorityFilter == value
                                     ? Colors.white
@@ -657,7 +731,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                       color: AppColors.clay400, size: 40),
                   const SizedBox(height: 12),
                   Text('Failed to load wishlist',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.ink400)),
+                      style: AppFonts.sans(color: AppColors.ink400)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => ref.invalidate(wishlistProvider),
@@ -710,13 +784,13 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                         entries.isEmpty
                             ? 'Your wishlist is empty'
                             : 'No results',
-                        style: GoogleFonts.literata(
+                        style: AppFonts.serif(
                             fontSize: 22, color: AppColors.ink300),
                       ),
                       if (entries.isEmpty) ...[
                         const SizedBox(height: 8),
                         Text('Add games you want to your wishlist',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 13, color: AppColors.ink200)),
                       ],
                     ],
@@ -733,7 +807,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Text(
                             'SUGGESTED BY FRIENDS (${suggestions.length})',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.5,
@@ -756,6 +830,9 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                               key: _keyFor(e.id),
                               entry: e,
                               onMoveToLibrary: () => _confirmMoveToLibrary(e),
+                              onRate: () => _openRatingSheet(e),
+                              onLogPlay: () =>
+                                  showLogPlaySheetForWishlist(context, e),
                               onDelete: () => _confirmDelete(e),
                             ),
                           ))
@@ -764,7 +841,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                         entries.isEmpty
                             ? 'Your wishlist is empty'
                             : 'No results',
-                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                        style: AppFonts.sans(
                             fontSize: 13, color: AppColors.ink300),
                       ),
                   ],
@@ -790,15 +867,27 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
     }
   }
 
+  void _openRatingSheet(WishlistEntry entry) {
+    final notifier = ref.read(wishlistProvider.notifier);
+    showRatingSheet(
+      context: context,
+      gameName: entry.game.name,
+      hearts: entry.heartRating,
+      fists: entry.punchRating,
+      onHearts: (v) => notifier.setHearts(entry.id, v),
+      onPunch: (v) => notifier.setPunch(entry.id, v),
+    );
+  }
+
   void _confirmMoveToLibrary(WishlistEntry entry) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Move to library?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text(
           'Add "${entry.game.name}" to your library and remove from wishlist?',
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink400),
         ),
         actions: [
           TextButton(
@@ -813,7 +902,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
                   .moveToLibrary(entry.id, entry.gameId);
             },
             child: Text('Move',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.forest500)),
+                style: AppFonts.sans(color: AppColors.forest500)),
           ),
         ],
       ),
@@ -825,10 +914,10 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Remove from wishlist?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text(
           'Remove "${entry.game.name}" from your wishlist?',
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink400),
         ),
         actions: [
           TextButton(
@@ -841,7 +930,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
               ref.read(wishlistProvider.notifier).removeEntry(entry.id);
             },
             child: Text('Remove',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -856,7 +945,7 @@ class _WishlistTabState extends ConsumerState<_WishlistTab> {
           SnackBar(
             content: Text(
                 'Added ${suggestion.game?.name ?? 'the game'} to your wishlist',
-                style: GoogleFonts.atkinsonHyperlegibleNext()),
+                style: AppFonts.sans()),
             backgroundColor: AppColors.forest500,
           ),
         );
@@ -938,13 +1027,13 @@ class _SuggestionRow extends StatelessWidget {
                   Text(game?.name ?? 'Unknown game',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.ink600)),
                   const SizedBox(height: 2),
                   Text('From ${suggestion.sender?.username ?? 'a friend'}',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 12, color: AppColors.plum400)),
                   if (suggestion.note != null &&
                       suggestion.note!.isNotEmpty) ...[
@@ -952,7 +1041,7 @@ class _SuggestionRow extends StatelessWidget {
                     Text(suggestion.note!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                        style: AppFonts.sans(
                             fontSize: 12, color: AppColors.ink300)),
                   ],
                   const SizedBox(height: 8),
@@ -962,7 +1051,7 @@ class _SuggestionRow extends StatelessWidget {
                         onPressed: onAccept,
                         icon: const Icon(Icons.check, size: 16),
                         label: Text('Accept',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 12, fontWeight: FontWeight.w600)),
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.forest500,
@@ -977,7 +1066,7 @@ class _SuggestionRow extends StatelessWidget {
                         icon: const Icon(Icons.close, size: 16),
                         label: Text('Dismiss',
                             style:
-                                GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12)),
+                                AppFonts.sans(fontSize: 12)),
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.ink300,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -1000,12 +1089,16 @@ class _SuggestionRow extends StatelessWidget {
 class _WishlistItemRow extends StatelessWidget {
   final WishlistEntry entry;
   final VoidCallback onMoveToLibrary;
+  final VoidCallback onRate;
+  final VoidCallback onLogPlay;
   final VoidCallback onDelete;
 
   const _WishlistItemRow({
     super.key,
     required this.entry,
     required this.onMoveToLibrary,
+    required this.onRate,
+    required this.onLogPlay,
     required this.onDelete,
   });
 
@@ -1052,7 +1145,7 @@ class _WishlistItemRow extends StatelessWidget {
                           game.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.ink600,
@@ -1066,7 +1159,7 @@ class _WishlistItemRow extends StatelessWidget {
                         color: _priorityColor(entry.priority),
                         child: Text(
                           _priorityLabel(entry.priority),
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                               fontSize: 8,
                               color: Colors.white,
                               letterSpacing: 0.8,
@@ -1075,18 +1168,34 @@ class _WishlistItemRow extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (_creditLine(game).isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      _creditLine(game),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.body(
+                          size: 11, color: AppColors.ink300),
+                    ),
+                  ],
+                  if (entry.heartRating > 0 || entry.punchRating > 0) ...[
+                    const SizedBox(height: 4),
+                    RatingSummary(
+                        hearts: entry.heartRating, fists: entry.punchRating),
+                  ],
                   if (entry.notes != null && entry.notes!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       entry.notes!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 11, color: AppColors.ink300),
                     ),
                   ],
                   if (game.playerCountLabel.isNotEmpty ||
-                      game.playtimeMinutes != null) ...[
+                      game.playtimeMinutes != null ||
+                      entry.playCount > 0) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -1095,7 +1204,7 @@ class _WishlistItemRow extends StatelessWidget {
                               size: 12, color: AppColors.ink200),
                           const SizedBox(width: 3),
                           Text(game.playerCountLabel,
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 11, color: AppColors.ink300)),
                           const SizedBox(width: 10),
                         ],
@@ -1104,7 +1213,18 @@ class _WishlistItemRow extends StatelessWidget {
                               size: 12, color: AppColors.ink200),
                           const SizedBox(width: 3),
                           Text('${game.playtimeMinutes} min',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
+                                  fontSize: 11, color: AppColors.ink300)),
+                          const SizedBox(width: 10),
+                        ],
+                        if (entry.playCount > 0) ...[
+                          const Icon(Icons.replay,
+                              size: 12, color: AppColors.ink200),
+                          const SizedBox(width: 3),
+                          Text(
+                              '${entry.playCount} '
+                              '${entry.playCount == 1 ? 'play' : 'plays'}',
+                              style: AppFonts.sans(
                                   fontSize: 11, color: AppColors.ink300)),
                         ],
                       ],
@@ -1120,6 +1240,15 @@ class _WishlistItemRow extends StatelessWidget {
             padding: EdgeInsets.zero,
             itemBuilder: (_) => [
               PopupMenuItem(
+                value: 'log',
+                child: _menuItem(Icons.add_circle_outline,
+                    'Log Play (${entry.playCount})'),
+              ),
+              PopupMenuItem(
+                value: 'rate',
+                child: _menuItem(Icons.favorite_border, 'Rate'),
+              ),
+              PopupMenuItem(
                 value: 'move',
                 child: _menuItem(
                     Icons.collections_bookmark_outlined, 'Move to Library'),
@@ -1132,6 +1261,8 @@ class _WishlistItemRow extends StatelessWidget {
               ),
             ],
             onSelected: (action) {
+              if (action == 'log') onLogPlay();
+              if (action == 'rate') onRate();
               if (action == 'move') onMoveToLibrary();
               if (action == 'delete') onDelete();
             },
@@ -1141,6 +1272,13 @@ class _WishlistItemRow extends StatelessWidget {
       ),
     );
   }
+
+  /// "Designer · Publisher", skipping whichever is unknown.
+  static String _creditLine(Game game) => [
+        if (game.designers.isNotEmpty) game.designerLabel,
+        if (game.publisher != null && game.publisher!.isNotEmpty)
+          game.publisher!,
+      ].join(' · ');
 
   String _priorityLabel(String priority) {
     switch (priority) {
@@ -1173,7 +1311,7 @@ class _WishlistItemRow extends StatelessWidget {
           Icon(icon, size: 16, color: color ?? AppColors.ink400),
           const SizedBox(width: 10),
           Text(label,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 13, color: color ?? AppColors.ink500)),
         ],
       );
@@ -1238,11 +1376,11 @@ class _FriendsTabState extends ConsumerState<_FriendsTab> {
             const Icon(Icons.people_outline, size: 48, color: AppColors.ink100),
             const SizedBox(height: 16),
             Text('No friends yet',
-                style: GoogleFonts.literata(
+                style: AppFonts.serif(
                     fontSize: 22, color: AppColors.ink300)),
             const SizedBox(height: 8),
             Text('Add friends from Profile → Friends',
-                style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink200)),
+                style: AppFonts.sans(fontSize: 13, color: AppColors.ink200)),
           ],
         ),
       );
@@ -1317,7 +1455,7 @@ class _PendingRequestsBanner extends StatelessWidget {
                       ? '1 friend request waiting'
                       : '$count friend requests waiting',
                   style:
-                      GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink500),
+                      AppFonts.sans(fontSize: 13, color: AppColors.ink500),
                 ),
               ),
               const Icon(Icons.chevron_right, size: 18, color: AppColors.plum400),
