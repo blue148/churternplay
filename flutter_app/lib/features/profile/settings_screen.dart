@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 
@@ -17,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
       body: Center(
         child: Text(
           'Settings coming soon',
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
               fontSize: 15, color: AppColors.ink300),
         ),
       ),

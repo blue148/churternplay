@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../providers/library_provider.dart';
@@ -204,7 +204,7 @@ class _AppBottomNavBar extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   title,
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 18, color: AppColors.ink600),
                 ),
               ),
@@ -214,7 +214,7 @@ class _AppBottomNavBar extends ConsumerWidget {
                 leading: Icon(option.icon, color: AppColors.ink500, size: 22),
                 title: Text(
                   option.label,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 15, color: AppColors.ink500),
                 ),
                 onTap: () {
@@ -274,7 +274,7 @@ class _NavBarItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                   fontSize: 11,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                   color: labelColor,

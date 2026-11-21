@@ -11,6 +11,7 @@ export interface BggGameDetails {
   year: number | null;
   cover_image: string | null;
   publisher: string | null;
+  designers: string[];
   min_players: number | null;
   max_players: number | null;
   playtime_minutes: number | null;
@@ -86,6 +87,12 @@ function parseThingResponse(xmlText: string): BggGameDetails {
   const publisherMatches = [...xmlText.matchAll(/<link[^>]*type="boardgamepublisher"[^>]*value="([^"]+)"/g)];
   const publishers = publisherMatches.map(m => m[1]);
 
+  // Extract designers (BGG lists "(Uncredited)" as a placeholder — drop it)
+  const designerMatches = [...xmlText.matchAll(/<link[^>]*type="boardgamedesigner"[^>]*value="([^"]+)"/g)];
+  const designers = designerMatches
+    .map(m => decodeHtmlEntities(m[1]))
+    .filter(d => d.toLowerCase() !== '(uncredited)');
+
   // Extract categories
   const categoryMatches = [...xmlText.matchAll(/<link[^>]*type="boardgamecategory"[^>]*value="([^"]+)"/g)];
   const categories = categoryMatches.map(m => m[1]);
@@ -103,6 +110,7 @@ function parseThingResponse(xmlText: string): BggGameDetails {
     year: yearMatch?.[1] ? parseInt(yearMatch[1]) : null,
     cover_image: imageMatch?.[1] || thumbnailMatch?.[1] || null,
     publisher: publishers[0] ? decodeHtmlEntities(publishers[0]) : null,
+    designers,
     min_players: minPlayersMatch?.[1] ? parseInt(minPlayersMatch[1]) : null,
     max_players: maxPlayersMatch?.[1] ? parseInt(maxPlayersMatch[1]) : null,
     playtime_minutes: playtimeMatch?.[1] ? parseInt(playtimeMatch[1]) : null,

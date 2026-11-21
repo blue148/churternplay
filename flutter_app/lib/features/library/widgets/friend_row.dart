@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 import '../../../core/theme/app_colors.dart';
 
@@ -48,13 +48,13 @@ class FriendRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(username,
-                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                        style: AppFonts.sans(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.ink600)),
                     Text(
                       subtitle ?? '$totalGames games',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 12, color: AppColors.ink300),
                     ),
                   ],
@@ -106,7 +106,7 @@ class FriendAvatar extends StatelessWidget {
       ),
       child: Center(
         child: Text(initial,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.white)),

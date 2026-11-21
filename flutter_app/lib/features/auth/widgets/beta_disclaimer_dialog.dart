@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../privacy/privacy_policy_screen.dart';
@@ -30,7 +30,7 @@ Future<void> showBetaDisclaimerDialog(BuildContext context) {
                   const SizedBox(width: 10),
                   Text(
                     'BETA PREVIEW',
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                       fontSize: 13,
                       letterSpacing: 2.5,
                       fontWeight: FontWeight.w600,
@@ -45,7 +45,7 @@ Future<void> showBetaDisclaimerDialog(BuildContext context) {
                 'distributed through TestFlight / Google Play testing to a '
                 'limited group of invited testers. By continuing you '
                 'acknowledge:',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 13, height: 1.5, color: AppColors.ink400),
               ),
               const SizedBox(height: 14),
@@ -69,7 +69,7 @@ Future<void> showBetaDisclaimerDialog(BuildContext context) {
                       Expanded(
                         child: Text(
                           p,
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                             fontSize: 12.5,
                             height: 1.5,
                             color: AppColors.ink400,
@@ -93,7 +93,7 @@ Future<void> showBetaDisclaimerDialog(BuildContext context) {
                 icon: const Icon(Icons.privacy_tip_outlined, size: 17),
                 label: Text(
                   'Read the Privacy Policy',
-                  style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12.5),
+                  style: AppFonts.sans(fontSize: 12.5),
                 ),
               ),
               const SizedBox(height: 20),
@@ -103,7 +103,7 @@ Future<void> showBetaDisclaimerDialog(BuildContext context) {
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(
                     'I UNDERSTAND',
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                       fontSize: 12,
                       letterSpacing: 2.5,
                       fontWeight: FontWeight.w500,

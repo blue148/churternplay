@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 import 'package:shake_gesture/shake_gesture.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -207,11 +207,11 @@ class _DiceRollerPageState extends State<DiceRollerPage>
               Expanded(child: _buildDiceArea()),
               const SizedBox(height: 8),
               Text('TOTAL',
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 10, letterSpacing: 2, color: AppColors.sky400)),
               Text(_total?.toString() ?? '—',
                   key: const ValueKey('total-text'),
-                  style: GoogleFonts.dmMono(
+                  style: AppFonts.mono(
                       fontSize: 56,
                       fontWeight: FontWeight.w300,
                       color: _total == null
@@ -259,7 +259,7 @@ class _DiceRollerPageState extends State<DiceRollerPage>
                   size: 72, color: AppColors.ink100),
               const SizedBox(height: 24),
               Text('Add dice above,\nthen roll or shake',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 22, color: AppColors.ink300),
                   textAlign: TextAlign.center),
             ],
@@ -334,7 +334,7 @@ class _DiePoolSelector extends StatelessWidget {
               DieFace(sides: sides, value: sides, size: 28),
               const SizedBox(width: 12),
               Text('d$sides',
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppColors.ink600)),
@@ -352,7 +352,7 @@ class _DiePoolSelector extends StatelessWidget {
                 width: 28,
                 child: Text('${counts[sides]}',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmMono(
+                    style: AppFonts.mono(
                         fontSize: 16,
                         color: counts[sides]! > 0
                             ? AppColors.ink600
@@ -521,7 +521,7 @@ class _DieShapePainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: '$value',
-        style: GoogleFonts.dmMono(
+        style: AppFonts.mono(
             fontSize: size.width * 0.32,
             fontWeight: FontWeight.w500,
             color: AppColors.sky600),

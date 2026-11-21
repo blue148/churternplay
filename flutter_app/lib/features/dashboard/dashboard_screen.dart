@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/library_entry.dart';
@@ -54,7 +54,7 @@ class _SectionHeader extends StatelessWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.literata(
+              style: AppFonts.serif(
                 fontSize: 14,
                 fontWeight: FontWeight.w300,
                 color: AppColors.ink400,
@@ -150,7 +150,7 @@ class _ActionCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppColors.ink400,
@@ -185,7 +185,7 @@ class _MostPlayed extends StatelessWidget {
       children: [
         const _SectionHeader('Most Played'),
         SizedBox(
-          height: 110,
+          height: 128,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: top.length,
@@ -195,7 +195,7 @@ class _MostPlayed extends StatelessWidget {
               return GestureDetector(
                 onTap: () => context.push('/game/${entry.id}', extra: entry),
                 child: SizedBox(
-                  width: 76,
+                  width: 96,
                   child: Stack(
                     children: [
                       ClipRRect(
@@ -203,12 +203,12 @@ class _MostPlayed extends StatelessWidget {
                         child: entry.game.coverImage != null
                             ? CachedNetworkImage(
                                 imageUrl: entry.game.coverImage!,
-                                width: 76,
+                                width: 96,
                                 height: 100,
                                 fit: BoxFit.cover,
                               )
                             : Container(
-                                width: 76,
+                                width: 96,
                                 height: 100,
                                 color: AppColors.parchment100,
                                 child: const Icon(Icons.menu_book_outlined,
@@ -216,7 +216,7 @@ class _MostPlayed extends StatelessWidget {
                               ),
                       ),
                       Positioned(
-                        bottom: 14,
+                        bottom: 32,
                         right: 4,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -227,7 +227,7 @@ class _MostPlayed extends StatelessWidget {
                           ),
                           child: Text(
                             '${entry.playCount}×',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                               fontSize: 9,
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -243,8 +243,8 @@ class _MostPlayed extends StatelessWidget {
                           entry.game.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
-                              fontSize: 9, color: AppColors.ink400),
+                          style: AppFonts.sans(
+                              fontSize: 14, color: AppColors.ink300),
                         ),
                       ),
                     ],
@@ -276,18 +276,16 @@ class _CollectionStats extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionHeader('Your Collection'),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 2.2,
+        // All four on one row; each tile shrinks its text to fit narrow phones.
+        Row(
           children: [
-            _StatTile(value: '$games', label: 'GAMES'),
-            _StatTile(value: '$starred', label: 'STARRED'),
-            _StatTile(value: '$played', label: 'PLAYED'),
-            _StatTile(value: '$unplayed', label: 'UNPLAYED'),
+            Expanded(child: _StatTile(value: '$games', label: 'GAMES')),
+            const SizedBox(width: 6),
+            Expanded(child: _StatTile(value: '$starred', label: 'STARRED')),
+            const SizedBox(width: 6),
+            Expanded(child: _StatTile(value: '$played', label: 'PLAYED')),
+            const SizedBox(width: 6),
+            Expanded(child: _StatTile(value: '$unplayed', label: 'UNPLAYED')),
           ],
         ),
       ],
@@ -303,34 +301,37 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: AppColors.parchment200),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.literata(
-              fontSize: 32,
-              color: AppColors.ink600,
-              height: 1,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: AppFonts.serif(
+                fontSize: 22,
+                color: AppColors.ink600,
+                height: 1,
+              ),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
-              fontSize: 10,
-              letterSpacing: 1.2,
-              color: AppColors.ink300,
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: AppFonts.sans(
+                fontSize: 9,
+                letterSpacing: 0.6,
+                color: AppColors.ink300,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -400,16 +401,16 @@ class _RecentRow extends StatelessWidget {
                 child: entry.game.coverImage != null
                     ? CachedNetworkImage(
                         imageUrl: entry.game.coverImage!,
-                        width: 48,
-                        height: 48,
+                        width: 80,
+                        height: 80,
                         fit: BoxFit.cover,
                       )
                     : Container(
-                        width: 48,
-                        height: 48,
+                        width: 80,
+                        height: 80,
                         color: AppColors.parchment100,
                         child: const Icon(Icons.menu_book_outlined,
-                            size: 20, color: AppColors.ink100),
+                            size: 30, color: AppColors.ink100),
                       ),
               ),
               const SizedBox(width: 12),
@@ -419,17 +420,18 @@ class _RecentRow extends StatelessWidget {
                   children: [
                     Text(
                       entry.game.name,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
-                          fontSize: 14,
+                      style: AppFonts.sans(
+                          fontSize: 17,
                           fontWeight: FontWeight.w500,
                           color: AppColors.ink600),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       _timeAgo(entry.addedDate),
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
-                          fontSize: 12, color: AppColors.ink200),
+                      style: AppFonts.sans(
+                          fontSize: 14, color: AppColors.ink300),
                     ),
                   ],
                 ),

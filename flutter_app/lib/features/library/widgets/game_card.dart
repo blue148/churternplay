@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../data/models/game.dart';
 import '../../../data/models/library_entry.dart';
+import 'rating_row.dart';
 
 enum GameCardLayout { grid, list }
 
@@ -24,6 +26,8 @@ class GameCard extends StatelessWidget {
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
   final VoidCallback? onSuggestToFriend;
+  final VoidCallback? onMoveToWishlist;
+  final VoidCallback? onRate;
 
   const GameCard({
     super.key,
@@ -38,6 +42,8 @@ class GameCard extends StatelessWidget {
     this.onAddToWishlist,
     this.wishlistStatus,
     this.onSuggestToFriend,
+    this.onMoveToWishlist,
+    this.onRate,
   });
 
   @override
@@ -53,7 +59,9 @@ class GameCard extends StatelessWidget {
             onToggleForSale: onToggleForSale,
             onAddToWishlist: onAddToWishlist,
             wishlistStatus: wishlistStatus,
-            onSuggestToFriend: onSuggestToFriend)
+            onSuggestToFriend: onSuggestToFriend,
+            onMoveToWishlist: onMoveToWishlist,
+            onRate: onRate)
         : _GridCard(
             entry: entry,
             onFavorite: onFavorite,
@@ -64,7 +72,9 @@ class GameCard extends StatelessWidget {
             onToggleForSale: onToggleForSale,
             onAddToWishlist: onAddToWishlist,
             wishlistStatus: wishlistStatus,
-            onSuggestToFriend: onSuggestToFriend);
+            onSuggestToFriend: onSuggestToFriend,
+            onMoveToWishlist: onMoveToWishlist,
+            onRate: onRate);
   }
 }
 
@@ -81,6 +91,8 @@ class _GridCard extends StatelessWidget {
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
   final VoidCallback? onSuggestToFriend;
+  final VoidCallback? onMoveToWishlist;
+  final VoidCallback? onRate;
 
   const _GridCard({
     required this.entry,
@@ -93,6 +105,8 @@ class _GridCard extends StatelessWidget {
     this.onAddToWishlist,
     this.wishlistStatus,
     this.onSuggestToFriend,
+    this.onMoveToWishlist,
+    this.onRate,
   });
 
   @override
@@ -137,7 +151,7 @@ class _GridCard extends StatelessWidget {
                           color: AppColors.forest600,
                           child: Text(
                             'SALE',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                                 fontSize: 8,
                                 color: Colors.white,
                                 letterSpacing: 1),
@@ -158,7 +172,7 @@ class _GridCard extends StatelessWidget {
                           ),
                           child: Text(
                             '${entry.playCount}×',
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                               fontSize: 9,
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -184,7 +198,7 @@ class _GridCard extends StatelessWidget {
                             game.name,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                               color: AppColors.ink600,
@@ -199,7 +213,7 @@ class _GridCard extends StatelessWidget {
                                     size: 10, color: AppColors.ink200),
                                 const SizedBox(width: 2),
                                 Text(game.playerCountLabel,
-                                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                                    style: AppFonts.sans(
                                         fontSize: 9, color: AppColors.ink200)),
                                 const SizedBox(width: 6),
                               ],
@@ -208,7 +222,7 @@ class _GridCard extends StatelessWidget {
                                     size: 10, color: AppColors.ink200),
                                 const SizedBox(width: 2),
                                 Text('${game.playtimeMinutes}m',
-                                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                                    style: AppFonts.sans(
                                         fontSize: 9, color: AppColors.ink200)),
                               ],
                               if (entry.hasVictoryStats)
@@ -231,7 +245,9 @@ class _GridCard extends StatelessWidget {
                         onToggleForSale: onToggleForSale,
                         onAddToWishlist: onAddToWishlist,
                         wishlistStatus: wishlistStatus,
-                        onSuggestToFriend: onSuggestToFriend),
+                        onSuggestToFriend: onSuggestToFriend,
+            onMoveToWishlist: onMoveToWishlist,
+            onRate: onRate),
                   ],
                 ),
               ),
@@ -256,6 +272,8 @@ class _ListCard extends StatelessWidget {
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
   final VoidCallback? onSuggestToFriend;
+  final VoidCallback? onMoveToWishlist;
+  final VoidCallback? onRate;
 
   const _ListCard({
     required this.entry,
@@ -268,6 +286,8 @@ class _ListCard extends StatelessWidget {
     this.onAddToWishlist,
     this.wishlistStatus,
     this.onSuggestToFriend,
+    this.onMoveToWishlist,
+    this.onRate,
   });
 
   @override
@@ -308,7 +328,7 @@ class _ListCard extends StatelessWidget {
                               game.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.ink600,
@@ -326,11 +346,25 @@ class _ListCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(2),
                               ),
                               child: Text('EXP',
-                                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                                  style: AppFonts.sans(
                                       fontSize: 9, color: AppColors.ink300)),
                             ),
                         ],
                       ),
+                      if (_creditLine(game).isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(_creditLine(game),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.body(
+                                size: 11, color: AppColors.ink300)),
+                      ],
+                      if (entry.heartRating > 0 || entry.punchRating > 0) ...[
+                        const SizedBox(height: 4),
+                        RatingSummary(
+                            hearts: entry.heartRating,
+                            fists: entry.punchRating),
+                      ],
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -339,7 +373,7 @@ class _ListCard extends StatelessWidget {
                                 size: 12, color: AppColors.ink200),
                             const SizedBox(width: 3),
                             Text(game.playerCountLabel,
-                                style: GoogleFonts.atkinsonHyperlegibleNext(
+                                style: AppFonts.sans(
                                     fontSize: 11, color: AppColors.ink300)),
                             const SizedBox(width: 10),
                           ],
@@ -348,7 +382,7 @@ class _ListCard extends StatelessWidget {
                                 size: 12, color: AppColors.ink200),
                             const SizedBox(width: 3),
                             Text('${game.playtimeMinutes} min',
-                                style: GoogleFonts.atkinsonHyperlegibleNext(
+                                style: AppFonts.sans(
                                     fontSize: 11, color: AppColors.ink300)),
                           ],
                         ],
@@ -362,7 +396,7 @@ class _ListCard extends StatelessWidget {
                             const SizedBox(width: 3),
                             Text(
                               '${entry.victoryStats!.winRate.toStringAsFixed(0)}% win rate',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 11, color: AppColors.wheat500),
                             ),
                           ],
@@ -411,6 +445,8 @@ class _ListCard extends StatelessWidget {
                     onAddToWishlist: onAddToWishlist,
                     wishlistStatus: wishlistStatus,
                     onSuggestToFriend: onSuggestToFriend,
+            onMoveToWishlist: onMoveToWishlist,
+            onRate: onRate,
                   ),
                 ],
               ),
@@ -464,6 +500,8 @@ class _MenuButton extends StatelessWidget {
   final VoidCallback? onAddToWishlist;
   final WishlistStatus? wishlistStatus;
   final VoidCallback? onSuggestToFriend;
+  final VoidCallback? onMoveToWishlist;
+  final VoidCallback? onRate;
 
   const _MenuButton({
     required this.entry,
@@ -475,6 +513,8 @@ class _MenuButton extends StatelessWidget {
     this.onAddToWishlist,
     this.wishlistStatus,
     this.onSuggestToFriend,
+    this.onMoveToWishlist,
+    this.onRate,
   });
 
   @override
@@ -487,7 +527,9 @@ class _MenuButton extends StatelessWidget {
         onLogPlay != null ||
         onToggleForSale != null ||
         wishlistStatus != null ||
-        onSuggestToFriend != null;
+        onSuggestToFriend != null ||
+        onMoveToWishlist != null ||
+        onRate != null;
     if (!hasAnyAction) return const SizedBox.shrink();
 
     return PopupMenuButton<String>(
@@ -527,6 +569,16 @@ class _MenuButton extends StatelessWidget {
               entry.isFavorite ? Icons.star : Icons.star_border,
               entry.isFavorite ? 'Unstar' : 'Star',
             ),
+          ),
+        if (onRate != null)
+          PopupMenuItem(
+            value: 'rate',
+            child: _menuItem(Icons.favorite_border, 'Rate'),
+          ),
+        if (onMoveToWishlist != null)
+          PopupMenuItem(
+            value: 'to_wishlist',
+            child: _menuItem(Icons.playlist_add, 'Move to Wishlist'),
           ),
         if (onLogPlay != null)
           PopupMenuItem(
@@ -572,6 +624,10 @@ class _MenuButton extends StatelessWidget {
             onAddToWishlist?.call();
           case 'suggest':
             onSuggestToFriend?.call();
+          case 'rate':
+            onRate?.call();
+          case 'to_wishlist':
+            onMoveToWishlist?.call();
         }
       },
     );
@@ -583,9 +639,15 @@ class _MenuButton extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             label,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 13, color: color ?? AppColors.ink500),
           ),
         ],
       );
 }
+
+/// "Designer · Publisher", skipping whichever is unknown.
+String _creditLine(Game game) => [
+      if (game.designers.isNotEmpty) game.designerLabel,
+      if (game.publisher != null && game.publisher!.isNotEmpty) game.publisher!,
+    ].join(' · ');

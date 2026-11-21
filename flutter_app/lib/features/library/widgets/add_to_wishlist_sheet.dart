@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 import '../../../core/theme/app_colors.dart';
+import 'rating_row.dart';
 import '../../../data/models/game.dart';
 import '../../../providers/wishlist_provider.dart';
 
@@ -47,6 +48,8 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
   late final _notesCtrl =
       TextEditingController(text: widget.prefilledNotes ?? '');
   String _priority = 'medium';
+  int _hearts = 0;
+  int _fists = 0;
   bool _submitting = false;
 
   @override
@@ -61,6 +64,8 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
       await ref.read(wishlistProvider.notifier).addGame(
             widget.game.id,
             priority: _priority,
+            heartRating: _hearts,
+            punchRating: _fists,
             notes:
                 _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
           );
@@ -69,7 +74,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Added ${widget.game.name} to your wishlist',
-              style: GoogleFonts.atkinsonHyperlegibleNext()),
+              style: AppFonts.sans()),
           backgroundColor: AppColors.forest500,
         ),
       );
@@ -79,7 +84,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Failed to add to wishlist. Please try again.',
-                style: GoogleFonts.atkinsonHyperlegibleNext())),
+                style: AppFonts.sans())),
       );
     }
   }
@@ -109,6 +114,8 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
                     _gamePreview(game),
                     const SizedBox(height: 20),
                     _priorityField(),
+                    const SizedBox(height: 20),
+                    _ratingsField(),
                     const SizedBox(height: 20),
                     _notesField(),
                   ],
@@ -141,7 +148,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
           Row(
             children: [
               Text('Add to Wishlist',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 24, color: AppColors.ink500)),
               const Spacer(),
               IconButton(
@@ -177,13 +184,13 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(game.name,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.ink500)),
               if (game.publisher != null)
                 Text(game.publisher!,
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 12, color: AppColors.ink300)),
             ],
           ),
@@ -203,7 +210,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(text,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.0,
@@ -223,7 +230,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
                   label: Text(label,
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                         fontSize: 13,
                         color: _priority == value
                             ? Colors.white
@@ -256,6 +263,25 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
     }
   }
 
+  Widget _ratingsField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('YOUR RATINGS (OPTIONAL)'),
+        RatingRow(
+          kind: RatingKind.hearts,
+          value: _hearts,
+          onChanged: (v) => setState(() => _hearts = v),
+        ),
+        RatingRow(
+          kind: RatingKind.fists,
+          value: _fists,
+          onChanged: (v) => setState(() => _fists = v),
+        ),
+      ],
+    );
+  }
+
   Widget _notesField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,7 +310,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
               borderSide: const BorderSide(color: AppColors.clay400),
             ),
           ),
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
               fontSize: 13, color: AppColors.ink500),
         ),
       ],
@@ -321,7 +347,7 @@ class _AddToWishlistSheetState extends ConsumerState<AddToWishlistSheet> {
                 : const Icon(Icons.playlist_add, size: 18),
             label: Text(
               _submitting ? 'Adding…' : 'Add to Wishlist',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white),

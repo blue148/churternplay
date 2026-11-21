@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -222,7 +222,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
                                       : (user?.email ?? 'U'))
                                   .substring(0, 1)
                                   .toUpperCase(),
-                              style: GoogleFonts.literata(
+                              style: AppFonts.serif(
                                 fontSize: 32,
                                 color: AppColors.forest500,
                               ),
@@ -253,7 +253,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text('Or choose a preset',
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 12, color: AppColors.ink300)),
                 const SizedBox(height: 10),
                 Wrap(
@@ -297,7 +297,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
           TextFormField(
             initialValue: user?.email ?? '',
             enabled: false,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 14, color: AppColors.ink300),
             decoration: _inputDecoration(),
           ),
@@ -308,7 +308,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
           const SizedBox(height: 6),
           TextFormField(
             controller: _usernameCtrl,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 14, color: AppColors.ink500),
             decoration: _inputDecoration(),
           ),
@@ -320,13 +320,13 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
           TextFormField(
             controller: _phoneCtrl,
             keyboardType: TextInputType.phone,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 14, color: AppColors.ink500),
             decoration: _inputDecoration(hint: '+1 555 123 4567'),
           ),
           const SizedBox(height: 4),
           Text('Used as a secondary contact method, not for sign-in',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 11, color: AppColors.ink300)),
           const SizedBox(height: 16),
 
@@ -337,7 +337,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
             controller: _bioCtrl,
             maxLines: 3,
             maxLength: 500,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 14, color: AppColors.ink500),
             decoration: _inputDecoration(hint: 'Tell us about yourself...'),
           ),
@@ -382,7 +382,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Change Password',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 13,
                           letterSpacing: 1,
                           color: AppColors.ink300)),
@@ -402,7 +402,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
             TextFormField(
               controller: _newPasswordCtrl,
               obscureText: true,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 14, color: AppColors.ink500),
               decoration: _inputDecoration(hint: 'Minimum 6 characters'),
             ),
@@ -412,7 +412,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
             TextFormField(
               controller: _confirmPasswordCtrl,
               obscureText: true,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 14, color: AppColors.ink500),
               decoration: _inputDecoration(hint: 'Re-enter new password'),
             ),
@@ -456,7 +456,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 0),
             leading: const Icon(Icons.delete_outline, color: AppColors.clay500),
             title: Text('Delete Account',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 15, color: AppColors.clay500)),
             onTap: _confirmDeleteAccount,
           ),
@@ -467,7 +467,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
 
   Widget _label(String text) => Text(
         text,
-        style: GoogleFonts.atkinsonHyperlegibleNext(
+        style: AppFonts.sans(
           fontSize: 10,
           letterSpacing: 2,
           color: AppColors.ink200,
@@ -508,7 +508,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(message,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 13, color: AppColors.clay600)),
       );
 
@@ -521,7 +521,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(message,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 13, color: AppColors.forest600)),
       );
 }
@@ -572,14 +572,14 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
             const SizedBox(height: 12),
             Text(
               'Delete account?',
-              style: GoogleFonts.literata(fontSize: 24, color: AppColors.ink600),
+              style: AppFonts.serif(fontSize: 24, color: AppColors.ink600),
             ),
             const SizedBox(height: 12),
             Text(
               'This permanently deletes your account and cannot be undone. '
               'Your profile, library, wishlist, game sessions, and friends '
               'will all be removed.',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 14, color: AppColors.ink400),
               textAlign: TextAlign.center,
             ),
@@ -595,7 +595,7 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
                 ),
                 child: Text(
                   _error!,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 13, color: AppColors.clay600),
                 ),
               ),

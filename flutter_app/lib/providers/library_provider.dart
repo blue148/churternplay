@@ -4,6 +4,7 @@ import '../data/models/library_entry.dart';
 import '../data/models/library_filter.dart';
 import '../data/services/games_service.dart';
 import 'auth_provider.dart';
+import 'wishlist_provider.dart';
 
 /// Set right before navigating to `/library` (e.g. from the bottom nav's
 /// long-press section menu) to land on a specific tab — 0: My Library,
@@ -80,6 +81,41 @@ class LibraryNotifier extends AsyncNotifier<List<LibraryEntry>> {
     }
   }
 
+  Future<void> setHearts(String entryId, int hearts) =>
+      _setRating(entryId, 'heart_rating', hearts,
+          (e) => e.copyWith(heartRating: hearts));
+
+  Future<void> setPunch(String entryId, int fists) =>
+      _setRating(entryId, 'punch_rating', fists,
+          (e) => e.copyWith(punchRating: fists));
+
+  Future<void> _setRating(String entryId, String column, int value,
+      LibraryEntry Function(LibraryEntry) apply) async {
+    final current = state.asData?.value ?? [];
+    state = AsyncData([for (final e in current) e.id == entryId ? apply(e) : e]);
+    try {
+      await GamesService.updateLibraryEntry(entryId, {column: value});
+    } catch (_) {
+      state = AsyncData(current);
+      rethrow;
+    }
+  }
+
+  /// Moves a game to the wishlist (atomic RPC; carries ratings and notes).
+  /// Throws if the game has logged plays — callers should check [LibraryEntry
+  /// .playCount] first and explain why the move isn't allowed.
+  Future<void> moveToWishlist(LibraryEntry entry) async {
+    final current = state.asData?.value ?? [];
+    state = AsyncData(current.where((e) => e.id != entry.id).toList());
+    try {
+      await GamesService.moveLibraryToWishlist(entry.gameId);
+      ref.invalidate(wishlistProvider);
+    } catch (_) {
+      state = AsyncData(current);
+      rethrow;
+    }
+  }
+
   Future<void> removeGame(String entryId) async {
     final current = state.asData?.value ?? [];
     state = AsyncData(current.where((e) => e.id != entryId).toList());
@@ -101,7 +137,8 @@ final libraryProvider =
   LibraryNotifier.new,
 );
 
-/// Free-text search applied to the catalogue (name / publisher / barcode).
+/// Free-text search applied to the catalogue (name / publisher / designer /
+/// barcode).
 class LibrarySearchNotifier extends Notifier<String> {
   @override
   String build() => '';
@@ -128,12 +165,14 @@ final libraryFilterProvider =
 /// library. Mirrors the web `availableFilters` memo in `Library.tsx`.
 class LibraryFacets {
   final List<String> publishers;
+  final List<String> designers;
   final List<String> gameTypes;
   final List<String> categories;
   final List<String> years;
 
   const LibraryFacets({
     this.publishers = const [],
+    this.designers = const [],
     this.gameTypes = const [],
     this.categories = const [],
     this.years = const [],
@@ -143,6 +182,7 @@ class LibraryFacets {
 final availableFacetsProvider = Provider<LibraryFacets>((ref) {
   final entries = ref.watch(libraryProvider).asData?.value ?? const [];
   final publishers = <String>{};
+  final designers = <String>{};
   final gameTypes = <String>{};
   final categories = <String>{};
   final years = <String>{};
@@ -150,6 +190,7 @@ final availableFacetsProvider = Provider<LibraryFacets>((ref) {
   for (final e in entries) {
     final p = e.game.publisher;
     if (p != null && p.isNotEmpty) publishers.add(p);
+    designers.addAll(e.game.designers);
     final y = e.game.year;
     if (y != null && y.isNotEmpty) years.add(y);
     gameTypes.addAll(e.game.gameType);
@@ -160,6 +201,7 @@ final availableFacetsProvider = Provider<LibraryFacets>((ref) {
 
   return LibraryFacets(
     publishers: sorted(publishers),
+    designers: sorted(designers),
     gameTypes: sorted(gameTypes),
     categories: sorted(categories),
     years: sorted(years),
@@ -180,6 +222,7 @@ final filteredLibraryProvider = Provider<AsyncValue<List<LibraryEntry>>>((ref) {
           .where((e) =>
               e.game.name.toLowerCase().contains(query) ||
               (e.game.publisher?.toLowerCase().contains(query) ?? false) ||
+              e.game.designers.any((d) => d.toLowerCase().contains(query)) ||
               (e.game.barcode?.toLowerCase().contains(query) ?? false))
           .toList();
     }
@@ -198,6 +241,7 @@ int countMatching(List<LibraryEntry> entries, LibraryFilter filter,
         .where((e) =>
             e.game.name.toLowerCase().contains(q) ||
             (e.game.publisher?.toLowerCase().contains(q) ?? false) ||
+            e.game.designers.any((d) => d.toLowerCase().contains(q)) ||
             (e.game.barcode?.toLowerCase().contains(q) ?? false))
         .toList();
   }

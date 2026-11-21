@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 import '../../../core/supabase_client.dart';
 import '../../../core/theme/app_colors.dart';
@@ -87,7 +87,7 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Suggested ${widget.game.name}',
-              style: GoogleFonts.atkinsonHyperlegibleNext()),
+              style: AppFonts.sans()),
           backgroundColor: AppColors.forest500,
         ),
       );
@@ -97,7 +97,7 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Failed to send suggestion. Please try again.',
-                style: GoogleFonts.atkinsonHyperlegibleNext())),
+                style: AppFonts.sans())),
       );
     }
   }
@@ -172,10 +172,10 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
           const Icon(Icons.people_outline, size: 48, color: AppColors.ink100),
           const SizedBox(height: 16),
           Text('No friends yet',
-              style: GoogleFonts.literata(fontSize: 22, color: AppColors.ink300)),
+              style: AppFonts.serif(fontSize: 22, color: AppColors.ink300)),
           const SizedBox(height: 8),
           Text('Add friends from Profile → Friends',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 13, color: AppColors.ink200)),
         ],
       ),
@@ -201,7 +201,7 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
           Row(
             children: [
               Text('Suggest to a Friend',
-                  style: GoogleFonts.literata(
+                  style: AppFonts.serif(
                       fontSize: 24, color: AppColors.ink500)),
               const Spacer(),
               IconButton(
@@ -237,13 +237,13 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(game.name,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.ink500)),
               if (game.publisher != null)
                 Text(game.publisher!,
-                    style: GoogleFonts.atkinsonHyperlegibleNext(
+                    style: AppFonts.sans(
                         fontSize: 12, color: AppColors.ink300)),
             ],
           ),
@@ -263,7 +263,7 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(text,
-            style: GoogleFonts.atkinsonHyperlegibleNext(
+            style: AppFonts.sans(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.0,
@@ -298,7 +298,7 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
               borderSide: const BorderSide(color: AppColors.clay400),
             ),
           ),
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
               fontSize: 13, color: AppColors.ink500),
         ),
       ],
@@ -335,7 +335,7 @@ class _SuggestToFriendSheetState extends ConsumerState<SuggestToFriendSheet> {
                 : const Icon(Icons.send_outlined, size: 18),
             label: Text(
               _sending ? 'Sending…' : 'Send Suggestion',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 import '../../../core/theme/app_colors.dart';
 
@@ -34,7 +34,7 @@ class FilterChipGroup extends StatelessWidget {
       children: [
         Text(
           title.toUpperCase(),
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.2,
@@ -50,7 +50,7 @@ class FilterChipGroup extends StatelessWidget {
               FilterChip(
                 label: Text(
                   capitalize ? _cap(option) : option,
-                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                  style: AppFonts.sans(
                     fontSize: 12,
                     color: selected.contains(option)
                         ? Colors.white

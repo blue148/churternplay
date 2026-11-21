@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_service.dart';
@@ -108,7 +108,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 20),
                       Text(
                         'Churtern Play',
-                        style: GoogleFonts.literata(
+                        style: AppFonts.serif(
                           fontSize: 32,
                           fontWeight: FontWeight.w300,
                           color: AppColors.ink600,
@@ -120,7 +120,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 8),
                       Text(
                         (_isSignUp ? 'Registration' : 'Authentication').toUpperCase(),
-                        style: GoogleFonts.atkinsonHyperlegibleNext(
+                        style: AppFonts.sans(
                           fontSize: 10,
                           letterSpacing: 2.5,
                           color: AppColors.ink200,
@@ -189,7 +189,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 context.push(ForgotPasswordScreen.routePath),
                             child: Text(
                               'Forgot password?',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                 fontSize: 12,
                                 color: AppColors.ink300,
                               ),
@@ -210,7 +210,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           child: Text(
                             _error!,
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                               fontSize: 13,
                               color: AppColors.clay600,
                             ),
@@ -236,7 +236,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 )
                               : Text(
                                   (_isSignUp ? 'Register' : 'Enter').toUpperCase(),
-                                  style: GoogleFonts.atkinsonHyperlegibleNext(
+                                  style: AppFonts.sans(
                                     fontSize: 12,
                                     letterSpacing: 2.5,
                                     fontWeight: FontWeight.w500,
@@ -259,7 +259,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           _isSignUp
                               ? 'Return to Sign In'
                               : 'Create New Account',
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                             fontSize: 11,
                             letterSpacing: 1.5,
                             color: AppColors.ink300,
@@ -291,7 +291,7 @@ class _AuthScreenState extends State<AuthScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.atkinsonHyperlegibleNext(
+          style: AppFonts.sans(
             fontSize: 10,
             letterSpacing: 2,
             color: AppColors.ink200,
@@ -305,7 +305,7 @@ class _AuthScreenState extends State<AuthScreen> {
           obscureText: obscure,
           keyboardType: keyboardType,
           validator: validator,
-          style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink500),
+          style: AppFonts.sans(fontSize: 14, color: AppColors.ink500),
           decoration: InputDecoration(
             fillColor: AppColors.parchment50,
             filled: true,

@@ -42,12 +42,56 @@ class WishlistNotifier extends AsyncNotifier<List<WishlistEntry>> {
   /// Shared by both Pull (this screen) and, later, Push's Accept action, so
   /// there's exactly one wishlist-insert code path (PRD Open Question #8).
   Future<void> addGame(String gameId,
-      {String priority = 'medium', String? notes}) async {
+      {String priority = 'medium',
+      String? notes,
+      int heartRating = 0,
+      int punchRating = 0}) async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
     await GamesService.addGameToWishlist(user.id, gameId, priority,
-        notes: notes);
+        notes: notes, heartRating: heartRating, punchRating: punchRating);
     await refresh();
+  }
+
+  Future<void> setHearts(String entryId, int hearts) =>
+      _setRating(entryId, 'heart_rating', hearts,
+          (e) => e.copyWith(heartRating: hearts));
+
+  Future<void> setPunch(String entryId, int fists) =>
+      _setRating(entryId, 'punch_rating', fists,
+          (e) => e.copyWith(punchRating: fists));
+
+  Future<void> _setRating(String entryId, String column, int value,
+      WishlistEntry Function(WishlistEntry) apply) async {
+    final prev = state.asData?.value ?? [];
+    state = AsyncData([for (final e in prev) e.id == entryId ? apply(e) : e]);
+    try {
+      await GamesService.updateWishlistEntry(entryId, {column: value});
+    } catch (_) {
+      state = AsyncData(prev);
+      rethrow;
+    }
+  }
+
+  /// Appends [playedAt] to the entry's play history (mirrors the library's
+  /// `recordPlayedDate`) so the row's play count updates immediately.
+  Future<void> recordPlayedDate(String entryId, DateTime playedAt) async {
+    final prev = state.asData?.value ?? [];
+    final index = prev.indexWhere((e) => e.id == entryId);
+    if (index == -1) return;
+    final dates = [...prev[index].playedDates, playedAt];
+    state = AsyncData([
+      for (final e in prev) e.id == entryId ? e.copyWith(playedDates: dates) : e,
+    ]);
+    try {
+      await GamesService.updateWishlistEntry(entryId, {
+        'played_dates':
+            dates.map((d) => d.toIso8601String().split('T').first).toList(),
+      });
+    } catch (_) {
+      state = AsyncData(prev);
+      rethrow;
+    }
   }
 
   Future<void> removeEntry(String entryId) async {

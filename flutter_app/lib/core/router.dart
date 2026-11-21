@@ -9,6 +9,7 @@ import '../features/auth/forgot_password_screen.dart';
 import '../features/auth/reset_password_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/game_nite/dice_roller_page.dart';
+import '../features/game_nite/score_calculator_page.dart';
 import '../features/game_nite/game_nite_screen.dart';
 import '../features/library/friend_library_screen.dart';
 import '../features/library/game_detail_screen.dart';
@@ -129,6 +130,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   path: 'dice-roller',
                   builder: (_, __) => const DiceRollerPage(),
                 ),
+                GoRoute(
+                  path: 'score-calculator',
+                  builder: (_, __) => const ScoreCalculatorPage(),
+                ),
               ],
             ),
           ]),
@@ -139,9 +144,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               routes: [
                 GoRoute(
                   path: 'scanner',
-                  pageBuilder: (_, __) => const MaterialPage(
+                  pageBuilder: (_, state) => MaterialPage(
                     fullscreenDialog: true,
-                    child: ScannerScreen(),
+                    child: ScannerScreen(
+                      toWishlist: state.uri.queryParameters['to'] == 'wishlist',
+                    ),
                   ),
                 ),
                 GoRoute(
@@ -153,6 +160,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                       child: ManualGameEntryPage(
                         barcode: args?.barcode,
                         initialQuery: args?.initialQuery,
+                        toWishlist: args?.toWishlist ?? false,
                       ),
                     );
                   },

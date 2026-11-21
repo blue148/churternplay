@@ -1,13 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
+
+/// The app's three font families, bundled as assets (see pubspec.yaml). This
+/// is the only place family names are spelled out: serif = Literata,
+/// sans-serif = Atkinson Hyperlegible (Next), mono = DM Mono.
+abstract class AppFonts {
+  static const serifFamily = 'Literata';
+  static const sansFamily = 'AtkinsonHyperlegibleNext';
+  static const monoFamily = 'DMMono';
+
+  static TextStyle serif({
+    double? fontSize,
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+    TextDecoration? decoration,
+  }) =>
+      TextStyle(
+        fontFamily: serifFamily,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        fontStyle: fontStyle,
+        color: color,
+        letterSpacing: letterSpacing,
+        height: height,
+        decoration: decoration,
+      );
+
+  static TextStyle sans({
+    double? fontSize,
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+    TextDecoration? decoration,
+  }) =>
+      TextStyle(
+        fontFamily: sansFamily,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        fontStyle: fontStyle,
+        color: color,
+        letterSpacing: letterSpacing,
+        height: height,
+        decoration: decoration,
+      );
+
+  static TextStyle mono({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) =>
+      TextStyle(
+        fontFamily: monoFamily,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+        letterSpacing: letterSpacing,
+        height: height,
+      );
+}
 
 abstract class AppTextStyles {
   // Display — Literata (serif)
   static TextStyle display(
           {double size = 32, FontWeight weight = FontWeight.w300, Color? color}) =>
-      GoogleFonts.literata(
+      AppFonts.serif(
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColors.ink600,
@@ -17,7 +81,7 @@ abstract class AppTextStyles {
   // Body — Atkinson Hyperlegible Next (sans-serif)
   static TextStyle body(
           {double size = 14, FontWeight weight = FontWeight.w400, Color? color}) =>
-      GoogleFonts.atkinsonHyperlegibleNext(
+      AppFonts.sans(
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColors.ink500,
@@ -26,7 +90,7 @@ abstract class AppTextStyles {
   // Mono — DM Mono
   static TextStyle mono(
           {double size = 12, FontWeight weight = FontWeight.w400, Color? color}) =>
-      GoogleFonts.dmMono(
+      AppFonts.mono(
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColors.ink400,

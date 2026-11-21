@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/supabase_client.dart';
 import '../../core/theme/app_colors.dart';
@@ -156,9 +156,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Remove friend?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text('Remove $name as a friend?',
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400)),
+            style: AppFonts.sans(fontSize: 14, color: AppColors.ink400)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -166,7 +166,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Remove',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -189,9 +189,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Cancel request?',
-            style: GoogleFonts.literata(fontSize: 22)),
+            style: AppFonts.serif(fontSize: 22)),
         content: Text('Cancel your friend request to $name?',
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink400)),
+            style: AppFonts.sans(fontSize: 14, color: AppColors.ink400)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -199,7 +199,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Cancel request',
-                style: GoogleFonts.atkinsonHyperlegibleNext(color: AppColors.clay500)),
+                style: AppFonts.sans(color: AppColors.clay500)),
           ),
         ],
       ),
@@ -229,7 +229,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     controller: _findCtrl,
                     onChanged: _onFindChanged,
                     style:
-                        GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink500),
+                        AppFonts.sans(fontSize: 14, color: AppColors.ink500),
                     decoration: InputDecoration(
                       hintText: 'Find friends by username…',
                       prefixIcon: const Icon(Icons.person_search,
@@ -266,7 +266,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     if (_findQuery.length < 2) {
       return Center(
         child: Text('Type at least 2 characters',
-            style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink300)),
+            style: AppFonts.sans(fontSize: 13, color: AppColors.ink300)),
       );
     }
 
@@ -286,7 +286,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Text('CURRENT',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -310,7 +310,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               size: 16, color: AppColors.clay500),
                           const SizedBox(width: 10),
                           Text('Remove friend',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 13, color: AppColors.clay500)),
                         ]),
                       ),
@@ -327,7 +327,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Text('ADD FRIENDS',
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.5,
@@ -349,7 +349,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                       size: 40, color: AppColors.ink100),
                   const SizedBox(height: 10),
                   Text('No matches for "$_findQuery"',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 13, color: AppColors.ink300)),
                 ],
               ),
@@ -373,7 +373,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     ),
                     child: Text('Add',
                         style:
-                            GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: Colors.white)),
+                            AppFonts.sans(fontSize: 13, color: Colors.white)),
                   ),
                 ),
               )),
@@ -392,11 +392,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             const Icon(Icons.people_outline, size: 48, color: AppColors.ink100),
             const SizedBox(height: 16),
             Text('No friends yet',
-                style: GoogleFonts.literata(
+                style: AppFonts.serif(
                     fontSize: 22, color: AppColors.ink300)),
             const SizedBox(height: 8),
             Text('Search above to find and add friends',
-                style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink200)),
+                style: AppFonts.sans(fontSize: 13, color: AppColors.ink200)),
           ],
         ),
       );
@@ -410,7 +410,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 6),
             child: Text('REQUESTS (${_pending.length})',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -445,7 +445,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 4, bottom: 6),
             child: Text('SENT (${_sent.length})',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -470,7 +470,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               size: 16, color: AppColors.clay500),
                           const SizedBox(width: 10),
                           Text('Cancel request',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 13, color: AppColors.clay500)),
                         ]),
                       ),
@@ -487,7 +487,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 4, bottom: 6),
             child: Text('FRIENDS (${_friends.length})',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -511,7 +511,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                               size: 16, color: AppColors.clay500),
                           const SizedBox(width: 10),
                           Text('Remove friend',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 13, color: AppColors.clay500)),
                         ]),
                       ),

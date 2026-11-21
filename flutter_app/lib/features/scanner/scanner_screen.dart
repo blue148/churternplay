@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,6 +14,7 @@ import '../../data/services/games_service.dart';
 import '../../data/services/text_recognition_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/library_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import '../library/manual_game_entry_page.dart';
 import 'retail_title.dart';
 import 'title_extractor.dart';
@@ -21,7 +22,10 @@ import 'title_extractor.dart';
 enum _ScanMode { barcode, title }
 
 class ScannerScreen extends ConsumerStatefulWidget {
-  const ScannerScreen({super.key});
+  const ScannerScreen({super.key, this.toWishlist = false});
+
+  /// Add scanned games to the wishlist instead of the library.
+  final bool toWishlist;
 
   @override
   ConsumerState<ScannerScreen> createState() => _ScannerScreenState();
@@ -78,18 +82,41 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
 
       Game? game;
       var alreadyInLibrary = false;
+      var alreadyInWishlist = false;
+      final toWishlist = widget.toWishlist;
+      final destination = toWishlist ? 'wishlist' : 'library';
 
       // 1. Check if game already exists in shared DB
       final existing = await GamesService.getGameByBarcode(barcode);
 
       if (existing != null) {
-        setState(() => _statusMessage = 'Adding to library…');
+        setState(() => _statusMessage = 'Adding to $destination…');
         game = existing;
-        try {
-          await GamesService.addGameToLibrary(user.id, existing.id);
-        } on PostgrestException catch (e) {
-          if (e.code != '23505') rethrow; // unique_violation
-          alreadyInLibrary = true;
+        if (toWishlist) {
+          final inLibrary = ref
+                  .read(libraryProvider)
+                  .asData
+                  ?.value
+                  .any((e) => e.gameId == existing.id) ??
+              false;
+          if (inLibrary) {
+            alreadyInLibrary = true;
+          } else {
+            try {
+              await GamesService.addGameToWishlist(
+                  user.id, existing.id, 'medium');
+            } on PostgrestException catch (e) {
+              if (e.code != '23505') rethrow; // unique_violation
+              alreadyInWishlist = true;
+            }
+          }
+        } else {
+          try {
+            await GamesService.addGameToLibrary(user.id, existing.id);
+          } on PostgrestException catch (e) {
+            if (e.code != '23505') rethrow; // unique_violation
+            alreadyInLibrary = true;
+          }
         }
       } else {
         setState(() => _statusMessage = 'Searching game database…');
@@ -99,15 +126,17 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         final bggId = result?['bgg_id'] as int?;
 
         if (bggId != null) {
-          setState(() => _statusMessage = 'Adding to library…');
+          setState(() => _statusMessage = 'Adding to $destination…');
           // 3. Create the shared game server-side from BGG and add it to the
           //    library.
           final added = await GamesService.addGameToLibraryFromBgg(
             bggId: bggId,
             barcode: barcode,
+            target: destination,
           );
           game = added.game;
           alreadyInLibrary = added.alreadyInLibrary;
+          alreadyInWishlist = added.alreadyInWishlist;
           // 4. Submit barcode mapping back to GameUPC (crowdsourced)
           GamesService.submitBarcodeMapping(barcode, bggId);
         } else if (name != null) {
@@ -121,6 +150,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
             extra: ManualAddArgs(
               barcode: barcode,
               initialQuery: cleanRetailTitle(name),
+              toWishlist: toWishlist,
             ),
           );
           return;
@@ -136,7 +166,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         return;
       }
 
-      await ref.read(libraryProvider.notifier).refresh();
+      if (toWishlist) {
+        await ref.read(wishlistProvider.notifier).refresh();
+      } else {
+        await ref.read(libraryProvider.notifier).refresh();
+      }
 
       if (mounted) {
         Navigator.pop(context);
@@ -145,8 +179,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
             content: Text(
               alreadyInLibrary
                   ? '${game.name} is already in your library'
-                  : '${game.name} added to your library',
-              style: GoogleFonts.atkinsonHyperlegibleNext(),
+                  : alreadyInWishlist
+                      ? '${game.name} is already on your wishlist'
+                      : '${game.name} added to your $destination',
+              style: AppFonts.sans(),
             ),
             backgroundColor: AppColors.forest500,
           ),
@@ -160,7 +196,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e', style: GoogleFonts.atkinsonHyperlegibleNext()),
+            content: Text('Error: $e', style: AppFonts.sans()),
             backgroundColor: AppColors.clay500,
           ),
         );
@@ -178,11 +214,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
           children: [
             const Icon(Icons.search_off, size: 40, color: AppColors.ink200),
             const SizedBox(height: 12),
-            Text('Game not found', style: GoogleFonts.literata(fontSize: 22)),
+            Text('Game not found', style: AppFonts.serif(fontSize: 22)),
             const SizedBox(height: 8),
             Text(
               'Barcode $barcode is not in the database yet.',
-              style: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, color: AppColors.ink300),
+              style: AppFonts.sans(fontSize: 13, color: AppColors.ink300),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -203,7 +239,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                       // unmatched barcode so the saved game keeps it.
                       context.pushReplacement(
                         '/library/manual-add',
-                        extra: ManualAddArgs(barcode: barcode),
+                        extra: ManualAddArgs(
+                            barcode: barcode, toWishlist: widget.toWishlist),
                       );
                     },
                     style: FilledButton.styleFrom(backgroundColor: AppColors.forest500),
@@ -262,12 +299,13 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Couldn't read a title. Try again or type it.",
-              style: GoogleFonts.atkinsonHyperlegibleNext()),
+              style: AppFonts.sans()),
           backgroundColor: AppColors.clay500,
           action: SnackBarAction(
             label: 'Type it',
             textColor: Colors.white,
-            onPressed: () => context.pushReplacement('/library/manual-add'),
+            onPressed: () => context.pushReplacement('/library/manual-add',
+            extra: ManualAddArgs(toWishlist: widget.toWishlist)),
           ),
         ),
       );
@@ -282,7 +320,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       case _TitleConfirmed(:final name):
         context.pushReplacement(
           '/library/manual-add',
-          extra: ManualAddArgs(initialQuery: name),
+          extra: ManualAddArgs(
+              initialQuery: name, toWishlist: widget.toWishlist),
         );
       case _TitleRetake():
         _pickBoxPhoto(source);
@@ -313,7 +352,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.atkinsonHyperlegibleNext()),
+        content: Text(message, style: AppFonts.sans()),
         backgroundColor: AppColors.clay500,
       ),
     );
@@ -329,7 +368,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: Text('Scan Game',
-            style: GoogleFonts.literata(color: Colors.white, fontSize: 22)),
+            style: AppFonts.serif(color: Colors.white, fontSize: 22)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -367,7 +406,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                     const SizedBox(height: 16),
                     Text(
                       _statusMessage ?? 'Processing…',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(color: Colors.white, fontSize: 14),
+                      style: AppFonts.sans(color: Colors.white, fontSize: 14),
                     ),
                   ],
                 ),
@@ -404,7 +443,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         side: WidgetStatePropertyAll(
             BorderSide(color: Colors.white.withValues(alpha: 0.5))),
         textStyle: WidgetStatePropertyAll(
-            GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14)),
+            AppFonts.sans(fontSize: 14)),
       ),
     );
   }
@@ -431,7 +470,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
             child: Text(
               'Point camera at a game barcode',
               textAlign: TextAlign.center,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 13,
               ),
@@ -453,14 +492,14 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
             Text(
               'Snap the front of the box',
               textAlign: TextAlign.center,
-              style: GoogleFonts.literata(color: Colors.white, fontSize: 22),
+              style: AppFonts.serif(color: Colors.white, fontSize: 22),
             ),
             const SizedBox(height: 8),
             Text(
               "Fill the frame and keep the title clear. We'll read it and "
               'let you check it before searching BoardGameGeek.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.atkinsonHyperlegibleNext(
+              style: AppFonts.sans(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 13,
               ),
@@ -578,11 +617,11 @@ class _TitleConfirmSheetState extends State<_TitleConfirmSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Is this the game?',
-                        style: GoogleFonts.literata(fontSize: 22, color: AppColors.ink500)),
+                        style: AppFonts.serif(fontSize: 22, color: AppColors.ink500)),
                     const SizedBox(height: 4),
                     Text(
                       'Fix the name if we misread it.',
-                      style: GoogleFonts.atkinsonHyperlegibleNext(
+                      style: AppFonts.sans(
                           fontSize: 13, color: AppColors.ink300),
                     ),
                   ],
@@ -617,7 +656,7 @@ class _TitleConfirmSheetState extends State<_TitleConfirmSheet> {
           if (alternatives.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text('Or did you mean',
-                style: GoogleFonts.atkinsonHyperlegibleNext(
+                style: AppFonts.sans(
                     fontSize: 12, color: AppColors.ink300)),
             const SizedBox(height: 6),
             Wrap(

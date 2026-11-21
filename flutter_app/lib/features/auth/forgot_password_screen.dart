@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_text_styles.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_service.dart';
@@ -73,7 +73,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     const SizedBox(height: 20),
                     Text(
                       'Reset Password',
-                      style: GoogleFonts.literata(
+                      style: AppFonts.serif(
                         fontSize: 28,
                         fontWeight: FontWeight.w300,
                         color: AppColors.ink600,
@@ -91,7 +91,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                         child: Text(
                           'If an account exists for that email, a reset link has been sent. Check your inbox.',
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                             fontSize: 13,
                             color: AppColors.ink400,
                           ),
@@ -114,7 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           children: [
                             Text(
                               'EMAIL',
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                 fontSize: 10,
                                 letterSpacing: 2,
                                 color: AppColors.ink200,
@@ -131,7 +131,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   : !v.contains('@')
                                       ? 'Enter the email on your account'
                                       : null,
-                              style: GoogleFonts.atkinsonHyperlegibleNext(
+                              style: AppFonts.sans(
                                   fontSize: 14, color: AppColors.ink500),
                               decoration: InputDecoration(
                                 fillColor: AppColors.parchment50,
@@ -169,7 +169,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                           child: Text(
                             _error!,
-                            style: GoogleFonts.atkinsonHyperlegibleNext(
+                            style: AppFonts.sans(
                               fontSize: 13,
                               color: AppColors.clay600,
                             ),
@@ -198,7 +198,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         onPressed: () => context.go('/auth'),
                         child: Text(
                           'Return to Sign In',
-                          style: GoogleFonts.atkinsonHyperlegibleNext(
+                          style: AppFonts.sans(
                             fontSize: 11,
                             letterSpacing: 1.5,
                             color: AppColors.ink300,

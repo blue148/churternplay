@@ -44,12 +44,24 @@ class FakeFriendSuggestionsStore implements FriendSuggestionsStore {
   Future<List<String>> load() async => _names;
 }
 
+class _LastSet implements LastPlayerSetStore {
+  List<String> names = [];
+  @override
+  Future<List<String>> load() async => names;
+  @override
+  Future<void> save(List<String> n) async {
+    if (n.isNotEmpty) names = n;
+  }
+}
+
 void main() {
   // A single store per test so recents survive navigating away and back, the
   // way the real per-user backend would.
   late InMemoryRecentPlayersStore store;
   late FakeFriendSuggestionsStore friendsStore;
+  late _LastSet lastSet;
   setUp(() {
+    lastSet = _LastSet();
     store = InMemoryRecentPlayersStore();
     friendsStore = FakeFriendSuggestionsStore();
   });
@@ -77,6 +89,7 @@ void main() {
       overrides: [
         recentPlayersStoreProvider.overrideWithValue(store),
         friendSuggestionsStoreProvider.overrideWithValue(friendsStore),
+        lastPlayerSetStoreProvider.overrideWithValue(lastSet),
       ],
       child: MaterialApp.router(routerConfig: router),
     ));
@@ -90,6 +103,13 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
   }
+
+  testWidgets('the board is remembered as the last player set', (tester) async {
+    await openFirstPlayer(tester);
+    await addPlayer(tester, 'Ada');
+    await addPlayer(tester, 'Grace');
+    expect(lastSet.names, ['Ada', 'Grace']);
+  });
 
   testWidgets('Pick button is disabled until a player is added',
       (tester) async {

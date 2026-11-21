@@ -8,7 +8,9 @@ class LibraryEntry {
   final Game game;
   final bool isFavorite;
   final bool forSale;
-  final String? personalRanking; // 'high' | 'medium' | 'low'
+  final String? personalRanking; // legacy 'high' | 'medium' | 'low'
+  final int heartRating; // 0-5, 0 = not rated
+  final int punchRating; // 0-5 fists, 0 = not rated
   final List<DateTime> playedDates;
   final String? notes;
   final DateTime addedDate;
@@ -23,6 +25,8 @@ class LibraryEntry {
     required this.isFavorite,
     required this.forSale,
     this.personalRanking,
+    this.heartRating = 0,
+    this.punchRating = 0,
     required this.playedDates,
     this.notes,
     required this.addedDate,
@@ -43,6 +47,8 @@ class LibraryEntry {
       isFavorite: json['is_favorite'] as bool? ?? false,
       forSale: json['for_sale'] as bool? ?? false,
       personalRanking: json['personal_ranking'] as String?,
+      heartRating: (json['heart_rating'] as int? ?? 0).clamp(0, 5),
+      punchRating: (json['punch_rating'] as int? ?? 0).clamp(0, 5),
       playedDates: ((json['played_dates'] as List<dynamic>?) ?? [])
           .map((d) => DateTime.parse(d as String))
           .toList(),
@@ -56,6 +62,8 @@ class LibraryEntry {
     bool? isFavorite,
     bool? forSale,
     String? personalRanking,
+    int? heartRating,
+    int? punchRating,
     List<DateTime>? playedDates,
     String? notes,
     VictoryStats? victoryStats,
@@ -68,6 +76,8 @@ class LibraryEntry {
         isFavorite: isFavorite ?? this.isFavorite,
         forSale: forSale ?? this.forSale,
         personalRanking: personalRanking ?? this.personalRanking,
+        heartRating: heartRating ?? this.heartRating,
+        punchRating: punchRating ?? this.punchRating,
         playedDates: playedDates ?? this.playedDates,
         notes: notes ?? this.notes,
         addedDate: addedDate,

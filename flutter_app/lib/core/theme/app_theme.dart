@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'app_text_styles.dart';
 
 import 'app_colors.dart';
 
@@ -40,13 +40,14 @@ abstract class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.parchment50,
-      textTheme: GoogleFonts.atkinsonHyperlegibleNextTextTheme().copyWith(
-        displayLarge: GoogleFonts.literata(fontSize: 48, fontWeight: FontWeight.w300),
-        displayMedium: GoogleFonts.literata(fontSize: 36, fontWeight: FontWeight.w300),
-        displaySmall: GoogleFonts.literata(fontSize: 28, fontWeight: FontWeight.w400),
-        headlineLarge: GoogleFonts.literata(fontSize: 24, fontWeight: FontWeight.w500),
-        headlineMedium: GoogleFonts.literata(fontSize: 20, fontWeight: FontWeight.w500),
-        headlineSmall: GoogleFonts.literata(fontSize: 18, fontWeight: FontWeight.w500),
+      fontFamily: AppFonts.sansFamily,
+      textTheme: const TextTheme().copyWith(
+        displayLarge: AppFonts.serif(fontSize: 48, fontWeight: FontWeight.w300),
+        displayMedium: AppFonts.serif(fontSize: 36, fontWeight: FontWeight.w300),
+        displaySmall: AppFonts.serif(fontSize: 28, fontWeight: FontWeight.w400),
+        headlineLarge: AppFonts.serif(fontSize: 24, fontWeight: FontWeight.w500),
+        headlineMedium: AppFonts.serif(fontSize: 20, fontWeight: FontWeight.w500),
+        headlineSmall: AppFonts.serif(fontSize: 18, fontWeight: FontWeight.w500),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -64,15 +65,15 @@ abstract class AppTheme {
           borderSide: const BorderSide(color: AppColors.ink300),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        labelStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 11, letterSpacing: 1.2, color: AppColors.ink300),
-        hintStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 14, color: AppColors.ink200),
+        labelStyle: AppFonts.sans(fontSize: 11, letterSpacing: 1.2, color: AppColors.ink300),
+        hintStyle: AppFonts.sans(fontSize: 14, color: AppColors.ink200),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.ink600,
           foregroundColor: AppColors.parchment50,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 13, letterSpacing: 2, fontWeight: FontWeight.w500),
+          textStyle: AppFonts.sans(fontSize: 13, letterSpacing: 2, fontWeight: FontWeight.w500),
           padding: const EdgeInsets.symmetric(vertical: 16),
           elevation: 0,
         ),
@@ -82,7 +83,7 @@ abstract class AppTheme {
           foregroundColor: AppColors.ink500,
           side: const BorderSide(color: AppColors.parchment300),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: GoogleFonts.atkinsonHyperlegibleNext(fontSize: 12, letterSpacing: 1.5),
+          textStyle: AppFonts.sans(fontSize: 12, letterSpacing: 1.5),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
@@ -111,7 +112,7 @@ abstract class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
-          return GoogleFonts.atkinsonHyperlegibleNext(
+          return AppFonts.sans(
             fontSize: 11,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             color: selected ? AppColors.forest500 : AppColors.ink300,
@@ -127,7 +128,7 @@ abstract class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 1,
         shadowColor: Colors.black12,
-        titleTextStyle: GoogleFonts.literata(
+        titleTextStyle: AppFonts.serif(
           fontSize: 22,
           fontWeight: FontWeight.w500,
           color: AppColors.ink600,

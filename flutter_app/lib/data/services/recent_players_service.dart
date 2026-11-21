@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../core/supabase_client.dart';
 
 /// Storage for the Game Nite "First Player" recents list. Abstracted so the UI
@@ -99,5 +101,34 @@ class RecentPlayersService implements RecentPlayersStore {
       await supabase.from(_table).delete().inFilter('id', toDelete);
     }
     return load();
+  }
+}
+
+/// The most recent set of players used on the Game Nite "First Player" board,
+/// in board order. Score Calculator and Log a Play start from this set.
+abstract interface class LastPlayerSetStore {
+  /// The saved set, or empty when none has been saved.
+  Future<List<String>> load();
+
+  /// Saves [names] as the current set. An empty list is ignored so clearing
+  /// the board doesn't wipe the default.
+  Future<void> save(List<String> names);
+}
+
+/// Device-local [LastPlayerSetStore] backed by shared preferences.
+class LocalLastPlayerSetStore implements LastPlayerSetStore {
+  static const _key = 'game_nite.last_player_set';
+
+  @override
+  Future<List<String>> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_key) ?? const [];
+  }
+
+  @override
+  Future<void> save(List<String> names) async {
+    if (names.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_key, names);
   }
 }
